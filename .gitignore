@@ -1,0 +1,6 @@
+cache/
+*.sql
+.vscode/
+logs/
+txData/
+server.cfg.bkp
