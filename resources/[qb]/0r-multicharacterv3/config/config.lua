@@ -169,8 +169,8 @@ end
 
 Config.ApartmentStart = false
 Config.NewPlayerSpawnCoords = vec4(-1037.74, -2737.75, 20.17, 327.06)
-Config.SkipSpawnSelector = true
-Config.SpawnSelector = '0r-spawn'
+Config.SkipSpawnSelector = false
+Config.SpawnSelector = 'qb-spawn'
 Config.CustomSpawnExports = function(playerId, position)
 end
 
