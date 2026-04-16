@@ -7,3 +7,5 @@ server.cfg.bkp
 server/secrets.cfg
 /server.cfg
 /myLogo.png
+artifacts/
+*.replxx_history
