@@ -4,3 +4,5 @@ cache/
 logs/
 txData/
 server.cfg.bkp
+secrets.cfg
+server/secrets.cfg
