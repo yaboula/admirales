@@ -5,3 +5,5 @@ logs/
 txData/
 server.cfg.bkp
 server/secrets.cfg
+/server.cfg
+/myLogo.png
