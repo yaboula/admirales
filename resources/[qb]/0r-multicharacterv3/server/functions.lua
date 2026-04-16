@@ -71,7 +71,11 @@ function GiveStarterItems(playerId)
         end
 
         if not item.customExport then
-            Inventory.AddItem(playerId, item.name, item.amount, nil, metadata)
+            if Framework.GetFrameworkName() ~= 'es_extended' then
+                exports['qb-inventory']:AddItem(playerId, item.name, item.amount, false, metadata)
+            else
+                xPlayer.addInventoryItem(item.name, item.amount)
+            end
         end
     end
 end
