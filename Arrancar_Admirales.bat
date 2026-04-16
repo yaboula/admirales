@@ -9,7 +9,7 @@ echo   Puerto txAdmin: 40126
 echo ===================================================
 echo.
 cd /d C:\admirales\Dev_Admirales\Dev_Admirales\artifacts
-start FXServer.exe +set serverProfile "default"
-echo El motor ha sido lanzado en una nueva ventana.
+start /high FXServer.exe +set serverProfile "default"
+echo El motor ha sido lanzado en una nueva ventana con prioridad ALTA.
 echo Puedes cerrar esta ventana.
 exit
