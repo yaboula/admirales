@@ -3,87 +3,19 @@
         "transactions": [
             {
                 "timestamp": 1776442877,
-                "name": "Account Created",
+                "Spendtype": "cash",
+                "amount": 4840,
                 "transactionType": "deposit",
                 "description": "Initial deposit when creating bank account",
-                "Spendtype": "cash",
-                "amount": 4840
+                "name": "Account Created"
             },
             {
                 "timestamp": 1776443268,
-                "name": "Interest Earned",
+                "Spendtype": "interest",
+                "amount": 4,
                 "transactionType": "deposit",
                 "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 4
-            }
-        ]
-    },
-    "KBD21338": {
-        "transactions": [
-            {
-                "timestamp": 1776260032,
-                "name": "Account Created",
-                "transactionType": "deposit",
-                "description": "Initial deposit when creating bank account",
-                "Spendtype": "cash",
-                "amount": 8462352483.97
-            },
-            {
-                "timestamp": 1776260258,
-                "name": "Interest Earned",
-                "transactionType": "deposit",
-                "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 48000
-            },
-            {
-                "timestamp": 1776260297,
-                "name": "Bank Withdrawal",
-                "transactionType": "withdraw",
-                "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 84245
-            },
-            {
-                "timestamp": 1776274738,
-                "name": "Interest Earned",
-                "transactionType": "deposit",
-                "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 48000
-            },
-            {
-                "timestamp": 1776420862,
-                "name": "Interest Earned",
-                "transactionType": "deposit",
-                "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 48000
-            },
-            {
-                "timestamp": 1776425615,
-                "name": "Interest Earned",
-                "transactionType": "deposit",
-                "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 48000
-            },
-            {
-                "timestamp": 1776430694,
-                "name": "Interest Earned",
-                "transactionType": "deposit",
-                "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 48000
-            },
-            {
-                "timestamp": 1776434401,
-                "name": "Interest Earned",
-                "transactionType": "deposit",
-                "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 48000
+                "name": "Interest Earned"
             }
         ]
     },
@@ -91,107 +23,219 @@
         "transactions": [
             {
                 "timestamp": 1776445110,
-                "name": "Account Created",
+                "Spendtype": "cash",
+                "amount": 5000,
                 "transactionType": "deposit",
                 "description": "Initial deposit when creating bank account",
-                "Spendtype": "cash",
-                "amount": 5000
+                "name": "Account Created"
             },
             {
                 "timestamp": 1776445701,
-                "name": "Interest Earned",
+                "Spendtype": "interest",
+                "amount": 5,
                 "transactionType": "deposit",
                 "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 5
+                "name": "Interest Earned"
             },
             {
                 "timestamp": 1776449051,
-                "name": "Interest Earned",
+                "Spendtype": "interest",
+                "amount": 4,
                 "transactionType": "deposit",
                 "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 4
+                "name": "Interest Earned"
             },
             {
                 "timestamp": 1776449063,
-                "name": "Bank Withdrawal",
+                "Spendtype": "cash",
+                "amount": 100,
                 "transactionType": "withdraw",
                 "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 100
+                "name": "Bank Withdrawal"
             },
             {
                 "timestamp": 1776449085,
-                "name": "Bank Withdrawal",
+                "Spendtype": "cash",
+                "amount": 1000,
                 "transactionType": "withdraw",
                 "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 1000
+                "name": "Bank Withdrawal"
             },
             {
                 "timestamp": 1776449145,
-                "name": "Bank Deposit",
+                "Spendtype": "cash",
+                "amount": 200,
                 "transactionType": "deposit",
                 "description": "Cash deposited to bank account",
-                "Spendtype": "cash",
-                "amount": 200
+                "name": "Bank Deposit"
             },
             {
                 "timestamp": 1776449157,
-                "name": "Bank Transfer",
+                "Spendtype": "bank",
+                "amount": 1000,
                 "transactionType": "transfer",
                 "description": "Money transferred to FLOUKY DL",
-                "Spendtype": "bank",
-                "amount": 1000
+                "name": "Bank Transfer"
             },
             {
                 "timestamp": 1776449296,
-                "name": "Bank Withdrawal",
+                "Spendtype": "cash",
+                "amount": 1000,
                 "transactionType": "withdraw",
                 "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 1000
+                "name": "Bank Withdrawal"
             },
             {
                 "timestamp": 1776450643,
-                "name": "Interest Earned",
+                "Spendtype": "interest",
+                "amount": 1003,
                 "transactionType": "deposit",
                 "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 1003
+                "name": "Interest Earned"
             },
             {
                 "timestamp": 1776451066,
-                "name": "Bank Withdrawal",
+                "Spendtype": "cash",
+                "amount": 1000,
                 "transactionType": "withdraw",
                 "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 1000
+                "name": "Bank Withdrawal"
             },
             {
                 "timestamp": 1776451322,
-                "name": "Bank Transfer",
+                "Spendtype": "bank",
+                "amount": 1000,
                 "transactionType": "transfer",
                 "description": "Money transferred to FLOUKY DL",
-                "Spendtype": "bank",
-                "amount": 1000
+                "name": "Bank Transfer"
             },
             {
                 "timestamp": 1776453303,
-                "name": "Interest Earned",
+                "Spendtype": "interest",
+                "amount": 4,
                 "transactionType": "deposit",
                 "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 4
+                "name": "Interest Earned"
             },
             {
-                "description": "Interest earned on account balance",
-                "name": "Interest Earned",
-                "transactionType": "deposit",
                 "timestamp": 1776454701,
                 "Spendtype": "interest",
-                "amount": 1003
+                "amount": 1003,
+                "transactionType": "deposit",
+                "name": "Interest Earned",
+                "description": "Interest earned on account balance"
+            },
+            {
+                "timestamp": 1776459687,
+                "Spendtype": "interest",
+                "amount": 4,
+                "transactionType": "deposit",
+                "name": "Interest Earned",
+                "description": "Interest earned on account balance"
+            },
+            {
+                "timestamp": 1776459687,
+                "Spendtype": "interest",
+                "amount": 1004,
+                "transactionType": "deposit",
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned"
+            },
+            {
+                "timestamp": 1776465174,
+                "Spendtype": "interest",
+                "amount": 4,
+                "transactionType": "deposit",
+                "name": "Interest Earned",
+                "description": "Interest earned on account balance"
+            },
+            {
+                "timestamp": 1776465174,
+                "Spendtype": "interest",
+                "amount": 1005,
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned",
+                "transactionType": "deposit"
+            }
+        ]
+    },
+    "FDB11654": {
+        "transactions": [
+            {
+                "timestamp": 1776463230,
+                "Spendtype": "cash",
+                "amount": 5000,
+                "transactionType": "deposit",
+                "name": "Account Created",
+                "description": "Initial deposit when creating bank account"
+            }
+        ]
+    },
+    "KBD21338": {
+        "transactions": [
+            {
+                "timestamp": 1776260032,
+                "Spendtype": "cash",
+                "amount": 8462352483.97,
+                "transactionType": "deposit",
+                "description": "Initial deposit when creating bank account",
+                "name": "Account Created"
+            },
+            {
+                "timestamp": 1776260258,
+                "Spendtype": "interest",
+                "amount": 48000,
+                "transactionType": "deposit",
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned"
+            },
+            {
+                "timestamp": 1776260297,
+                "Spendtype": "cash",
+                "amount": 84245,
+                "transactionType": "withdraw",
+                "description": "Cash withdrawn from bank account",
+                "name": "Bank Withdrawal"
+            },
+            {
+                "timestamp": 1776274738,
+                "Spendtype": "interest",
+                "amount": 48000,
+                "transactionType": "deposit",
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned"
+            },
+            {
+                "timestamp": 1776420862,
+                "Spendtype": "interest",
+                "amount": 48000,
+                "transactionType": "deposit",
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned"
+            },
+            {
+                "timestamp": 1776425615,
+                "Spendtype": "interest",
+                "amount": 48000,
+                "transactionType": "deposit",
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned"
+            },
+            {
+                "timestamp": 1776430694,
+                "Spendtype": "interest",
+                "amount": 48000,
+                "transactionType": "deposit",
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned"
+            },
+            {
+                "timestamp": 1776434401,
+                "Spendtype": "interest",
+                "amount": 48000,
+                "transactionType": "deposit",
+                "description": "Interest earned on account balance",
+                "name": "Interest Earned"
             }
         ]
     },
@@ -199,59 +243,59 @@
         "transactions": [
             {
                 "timestamp": 1776446719,
-                "name": "Account Created",
+                "Spendtype": "cash",
+                "amount": 5010,
                 "transactionType": "deposit",
                 "description": "Initial deposit when creating bank account",
-                "Spendtype": "cash",
-                "amount": 5010
+                "name": "Account Created"
             },
             {
                 "timestamp": 1776450643,
-                "name": "Interest Earned",
+                "Spendtype": "interest",
+                "amount": 1888,
                 "transactionType": "deposit",
                 "description": "Interest earned on account balance",
-                "Spendtype": "interest",
-                "amount": 1888
+                "name": "Interest Earned"
             },
             {
                 "timestamp": 1776451059,
-                "name": "Bank Withdrawal",
+                "Spendtype": "cash",
+                "amount": 1129,
                 "transactionType": "withdraw",
                 "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 1129
+                "name": "Bank Withdrawal"
             },
             {
                 "timestamp": 1776451076,
-                "name": "Bank Withdrawal",
+                "Spendtype": "cash",
+                "amount": 2236,
                 "transactionType": "withdraw",
                 "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 2236
+                "name": "Bank Withdrawal"
             },
             {
                 "timestamp": 1776451086,
-                "name": "Bank Withdrawal",
+                "Spendtype": "cash",
+                "amount": 3288,
                 "transactionType": "withdraw",
                 "description": "Cash withdrawn from bank account",
-                "Spendtype": "cash",
-                "amount": 3288
+                "name": "Bank Withdrawal"
             },
             {
                 "timestamp": 1776451128,
-                "name": "Bank Deposit",
+                "Spendtype": "cash",
+                "amount": 1000,
                 "transactionType": "deposit",
                 "description": "Cash deposited to bank account",
-                "Spendtype": "cash",
-                "amount": 1000
+                "name": "Bank Deposit"
             },
             {
                 "timestamp": 1776451360,
-                "name": "Bank Transfer",
+                "Spendtype": "bank",
+                "amount": 1083,
                 "transactionType": "transfer",
                 "description": "Money transferred to yahya dev",
-                "Spendtype": "bank",
-                "amount": 1083
+                "name": "Bank Transfer"
             }
         ]
     }

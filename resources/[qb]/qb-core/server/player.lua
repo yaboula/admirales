@@ -550,17 +550,53 @@ local playertables = { -- Add tables as needed
     { table = 'player_vehicles' }
 }
 
+local existingPlayerTables = nil
+
+local function GetExistingPlayerTables()
+    if existingPlayerTables then
+        return existingPlayerTables
+    end
+
+    existingPlayerTables = {}
+    local rows = MySQL.query.await('SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()')
+    if type(rows) == 'table' then
+        for i = 1, #rows do
+            local tableName = rows[i].TABLE_NAME or rows[i].table_name
+            if type(tableName) == 'string' and tableName ~= '' then
+                existingPlayerTables[tableName] = true
+            end
+        end
+    end
+
+    -- Ensure character deletion always includes the main players row.
+    existingPlayerTables.players = true
+
+    return existingPlayerTables
+end
+
+local function BuildDeleteCharacterQueries(citizenid)
+    local queryTemplate = 'DELETE FROM %s WHERE citizenid = ?'
+    local availableTables = GetExistingPlayerTables()
+    local queries = {}
+
+    for i = 1, #playertables do
+        local tableName = playertables[i].table
+        if availableTables[tableName] then
+            queries[#queries + 1] = { query = queryTemplate:format(tableName), values = { citizenid } }
+        end
+    end
+
+    return queries
+end
+
 function QBCore.Player.DeleteCharacter(source, citizenid)
     local license = QBCore.Functions.GetIdentifier(source, 'license')
     local result = MySQL.scalar.await('SELECT license FROM players where citizenid = ?', { citizenid })
     if license == result then
-        local query = 'DELETE FROM %s WHERE citizenid = ?'
-        local tableCount = #playertables
-        local queries = table.create(tableCount, 0)
-
-        for i = 1, tableCount do
-            local v = playertables[i]
-            queries[i] = { query = query:format(v.table), values = { citizenid } }
+        local queries = BuildDeleteCharacterQueries(citizenid)
+        if #queries == 0 then
+            TriggerEvent('qb-log:server:CreateLog', 'joinleave', 'Character Deleted', 'red', '**' .. GetPlayerName(source) .. '** ' .. license .. ' deleted **' .. citizenid .. '**..')
+            return
         end
 
         MySQL.transaction(queries, function(result2)
@@ -577,17 +613,15 @@ end
 function QBCore.Player.ForceDeleteCharacter(citizenid)
     local result = MySQL.scalar.await('SELECT license FROM players where citizenid = ?', { citizenid })
     if result then
-        local query = 'DELETE FROM %s WHERE citizenid = ?'
-        local tableCount = #playertables
-        local queries = table.create(tableCount, 0)
+        local queries = BuildDeleteCharacterQueries(citizenid)
         local Player = QBCore.Functions.GetPlayerByCitizenId(citizenid)
 
         if Player then
             DropPlayer(Player.PlayerData.source, 'An admin deleted the character which you are currently using')
         end
-        for i = 1, tableCount do
-            local v = playertables[i]
-            queries[i] = { query = query:format(v.table), values = { citizenid } }
+        if #queries == 0 then
+            TriggerEvent('qb-log:server:CreateLog', 'joinleave', 'Character Force Deleted', 'red', 'Character **' .. citizenid .. '** got deleted')
+            return
         end
 
         MySQL.transaction(queries, function(result2)
