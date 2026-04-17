@@ -1,61 +1,49 @@
-# qb-clothing
-Clothing for QB-Core Framework :dress:
+# Admirales Dev - Modern Clothing UI
 
-# License
+This is a complete architectural and visual refactor of the traditional `qb-clothing` NUI. Migrated by **Admirales Dev** from legacy jQuery/Bootstrap to a blazing-fast React + Vite SPA.
 
-    QBCore Framework
-    Copyright (C) 2021 Joshua Eger
+## 🚀 Key Features
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+*   **Modern React SPA:** Built with React, TypeScript, and Vite for optimal performance and rapid development. No more clunky, unmaintainable jQuery.
+*   **Immersive Glassmorphism:** Custom tailored transparent UI adhering to the latest design trends. Pure CSS backdrop filters and smooth CSS animations replace the ugly solid black backgrounds of older scripts.
+*   **Military Green Aesthetics:** A custom tailored highly professional deep dark-green accent (`#166534`) to represent our premium brand.
+*   **UX/UI Overhaul:**
+    *   **Smooth Camera Drags:** Mouse-drag rotational controls have been engineered to replace static, slow rotation buttons.
+    *   **Direct Model Input:** Replaced exhausting endless click arrows with sleek numeric inputs – players can directly type `84` to instantly skip to dress 84.
+    *   **English Localization:** Refactored structure translates legacy and mismatched translations strictly to English for general scaling (Face Mix, Shape Mix, Mother, Father).
+*   **Bug Free Architecture:**
+    *   Resolved `saveSkin` base character override bugs.
+    *   Resolved FiveM Chromium Engine Artifacts (solid black squares caused by improper tailwind rendering in CEF).
+    *   Fixed empty generic categorizations.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+## 💻 Tech Stack
+*   **Core:** React 18, React DOM
+*   **Build Tool:** Vite
+*   **Styling:** Tailwind CSS (Dark Mode preset, completely transparent body layering)
+*   **Icons:** Lucide React
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>
+## 📦 How to Build / Maintain
 
-## Dependencies
-- [qb-core](https://github.com/qbcore-framework/qb-core)
+All UI source code is located securely inside the `/ui/` directory.
 
-## Screenshots
-![image](https://user-images.githubusercontent.com/66404074/153545004-6337e685-d3a5-478c-8fa2-e50f4b1d2030.png)
-![image](https://user-images.githubusercontent.com/66404074/153545067-aa9269c9-3bbc-4ce2-bbcf-2dfcff6bbc05.png)
-![image](https://user-images.githubusercontent.com/66404074/153545114-0a363fa3-5981-424a-9894-baf15ea1da40.png)
-![image](https://user-images.githubusercontent.com/66404074/153545159-255920cc-baf4-4cbb-a569-29b43298638e.png)
-![image](https://user-images.githubusercontent.com/66404074/153545179-b4958a16-7ec4-4ae6-a341-ba3786c0042d.png)
-![image](https://user-images.githubusercontent.com/66404074/153545214-cb308b2f-9fc4-460b-b630-2dbd80033481.png)
+1.  Navigate to the UI folder:
+    ```bash
+    cd ui
+    ```
+2.  Install dependencies (if it's your first time):
+    ```bash
+    npm install
+    ```
+3.  Build the project to export to FiveM:
+    ```bash
+    npm run build
+    ```
+    *Vite is configured to automatically inject the compiled assets directly into the `/html/` directory, maintaining 100% compatibility with FiveM server asset streams.*
 
-## Features
-- Configurable Ped Selection
-- Detailed nose, chin, jaw, cheek etc. configuration
-- Camera Rotating
-- 3 Different Camera Angles
-- Clothing Stores
-- Barbers
-- Job Locker Rooms (Configurable Outfit Presets)
-- Saveable Outfits
-- /hat, /glasses, /mask (See the commands section below)
+4.  On your FiveM Server:
+    ```bash
+    ensure qb-clothing
+    ```
 
-### Commands
-- /skin (Admin Only) - Opens the clothing menu
-- /hat - Toggles the hat on/off
-- /mask - Toggles the hmaskat on/off
-- /glasses - Toggles the glasses on/off
-
-## Installation
-### Manual
-- Download the script and put it in the `[qb]` directory.
-- Import `qb-clothing.sql` in your database
-- Add the following code to your server.cfg/resouces.cfg
-```
-ensure qb-core
-ensure qb-clothing
-```
-
-## Configuration
-Please see config.lua
+---
+*Developed with ❤️ by Admirales Dev*

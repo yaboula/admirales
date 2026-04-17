@@ -28,7 +28,5 @@ client_scripts {
 
 files {
     'html/index.html',
-    'html/style.css',
-    'html/reset.css',
-    'html/script.js'
+    'html/assets/*'
 }
