@@ -70,7 +70,8 @@ Config.DefaultHudSettings   = {
 
 --If money is an item on your server, you need to edit this.
 Config.MoneySettings        = {
-    isMoneyItem = true,
+    -- QBCore in this server uses account-based cash (PlayerData.money.cash).
+    isMoneyItem = false,
     itemName = 'cash',
     -- You can put one more currency if you want it to appear on the `client_info`.
     -- to hide it or set active to `false`
