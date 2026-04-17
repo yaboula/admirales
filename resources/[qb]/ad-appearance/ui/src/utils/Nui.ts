@@ -3,7 +3,7 @@
  * Automatically mocks responses when run in a browser environment (development).
  */
 
-const resourceName = (window as any).GetParentResourceName ? (window as any).GetParentResourceName() : 'qb-clothing';
+const resourceName = (window as any).GetParentResourceName ? (window as any).GetParentResourceName() : 'ad-appearance';
 
 export const fetchNui = async <T = any>(eventName: string, data?: any, mockData?: T): Promise<T> => {
   const options = {

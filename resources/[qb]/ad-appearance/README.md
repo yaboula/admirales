@@ -1,6 +1,6 @@
 # Admirales Dev - Modern Clothing UI
 
-This is a complete architectural and visual refactor of the traditional `qb-clothing` NUI. Migrated by **Admirales Dev** from legacy jQuery/Bootstrap to a blazing-fast React + Vite SPA.
+This is a complete architectural and visual refactor of the `ad-appearance` (formerly `qb-clothing`) NUI. Migrated by **Admirales Dev** from legacy jQuery/Bootstrap to a blazing-fast React + Vite SPA.
 
 ## 🚀 Key Features
 
@@ -42,7 +42,7 @@ All UI source code is located securely inside the `/ui/` directory.
 
 4.  On your FiveM Server:
     ```bash
-    ensure qb-clothing
+    ensure ad-appearance
     ```
 
 ---

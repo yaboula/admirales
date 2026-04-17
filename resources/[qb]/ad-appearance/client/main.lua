@@ -936,7 +936,7 @@ end
 local function SaveSkin()
     local model = GetEntityModel(PlayerPedId())
     local clothing = json.encode(skinData)
-    TriggerServerEvent("qb-clothing:saveSkin", model, clothing)
+    TriggerServerEvent("ad-appearance:saveSkin", model, clothing)
 end
 local function loadAnimDict( dict )
     while ( not HasAnimDictLoaded( dict ) ) do
@@ -963,7 +963,7 @@ local function reloadSkin(health)
     Citizen.Wait(1000) -- Safety Delay
 
     TriggerServerEvent("qb-clothes:loadPlayerSkin") -- LOADING PLAYER'S CLOTHES
-    TriggerServerEvent("qb-clothing:loadPlayerSkin") -- LOADING PLAYER'S CLOTHES - Event 2
+    TriggerServerEvent("ad-appearance:loadPlayerSkin") -- LOADING PLAYER'S CLOTHES - Event 2
 
     SetPedMaxHealth(PlayerId(), maxhealth)
     Citizen.Wait(1000) -- Safety Delay
@@ -978,7 +978,7 @@ end)
 local function getOutfits(gradeLevel, data)
     local gender = "male"
     if QBCore.Functions.GetPlayerData().charinfo.gender == 1 then gender = "female" end
-    QBCore.Functions.TriggerCallback('qb-clothing:server:getOutfits', function(result)
+    QBCore.Functions.TriggerCallback('ad-appearance:server:getOutfits', function(result)
         openMenu({
             {menu = "roomOutfits", label = Lang:t("outfits.roomOutfits"), selected = true, outfits = data[gender][gradeLevel]},
             {menu = "myOutfits", label = Lang:t("outfits.myOutfits"), selected = false, outfits = result},
@@ -999,7 +999,7 @@ RegisterNetEvent('QBCore:Client:UpdateObject', function()
 	QBCore = exports['qb-core']:GetCoreObject()
 end)
 
-RegisterNetEvent('qb-clothing:client:openMenu', function()
+RegisterNetEvent('ad-appearance:client:openMenu', function()
     customCamLocation = nil
     openMenu({
         {menu = "character", label = Lang:t("menu.features"), selected = true},
@@ -1008,7 +1008,7 @@ RegisterNetEvent('qb-clothing:client:openMenu', function()
         {menu = "accessoires", label = Lang:t("menu.accessoires"), selected = false}
     })
 end)
-RegisterNetEvent('qb-clothing:client:reloadOutfits', function(myOutfits)
+RegisterNetEvent('ad-appearance:client:reloadOutfits', function(myOutfits)
     SendNUIMessage({
         action = "reloadMyOutfits",
         outfits = myOutfits
@@ -1046,11 +1046,11 @@ RegisterNetEvent("qb-clothes:loadSkin", function(_, model, data)
         SetPlayerModel(PlayerId(), model)
         SetPedComponentVariation(PlayerPedId(), 0, 0, 0, 2)
         data = json.decode(data)
-        TriggerEvent('qb-clothing:client:loadPlayerClothing', data, PlayerPedId())
+        TriggerEvent('ad-appearance:client:loadPlayerClothing', data, PlayerPedId())
     end)
 end)
 
-RegisterNetEvent('qb-clothing:client:loadPlayerClothing', function(data, ped)
+RegisterNetEvent('ad-appearance:client:loadPlayerClothing', function(data, ped)
     if ped == nil then ped = PlayerPedId() end
 
     for i = 0, 11 do
@@ -1204,7 +1204,7 @@ RegisterNetEvent('qb-clothing:client:loadPlayerClothing', function(data, ped)
     SetPedFaceFeature(ped, 19, (data['neck_thikness'].item / 10))
     skinData = data
 end)
-RegisterNetEvent('qb-clothing:client:loadOutfit', function(oData)
+RegisterNetEvent('ad-appearance:client:loadOutfit', function(oData)
     local ped = PlayerPedId()
 
     local data = oData.outfitData
@@ -1321,7 +1321,7 @@ RegisterNetEvent('qb-clothing:client:loadOutfit', function(oData)
         QBCore.Functions.Notify("You have chosen "..oData.outfitName.."! Press Confirm to confirm outfit.")
     end
 end)
-RegisterNetEvent("qb-clothing:client:adjustfacewear", function(type)
+RegisterNetEvent("ad-appearance:client:adjustfacewear", function(type)
     if QBCore.Functions.GetPlayerData().metadata["ishandcuffed"] then return end
     removeWear = not removeWear
     local AnimSet = "mp_masks@on_foot"
@@ -1448,8 +1448,8 @@ end)
 RegisterNetEvent('QBCore:Client:OnGangUpdate', function(GangInfo)
     PlayerData.gang = GangInfo
 end)
-RegisterNetEvent('qb-clothing:client:openOutfitMenu', function()
-    QBCore.Functions.TriggerCallback('qb-clothing:server:getOutfits', function(result)
+RegisterNetEvent('ad-appearance:client:openOutfitMenu', function()
+    QBCore.Functions.TriggerCallback('ad-appearance:server:getOutfits', function(result)
         openMenu({
             {menu = "myOutfits", label = Lang:t("outfits.myOutfits"), selected = true, outfits = result},
         })
@@ -1458,7 +1458,7 @@ end)
 
 -- Callbacks
 RegisterNUICallback('selectOutfit', function(data, cb)
-    TriggerEvent('qb-clothing:client:loadOutfit', data)
+    TriggerEvent('ad-appearance:client:loadOutfit', data)
     cb('ok')
 end)
 RegisterNUICallback('rotateRight', function(_, cb)
@@ -1547,7 +1547,7 @@ RegisterNUICallback('close', function(_, cb)
     creatingCharacter = false
     disableCam()
     FreezeEntityPosition(PlayerPedId(), false)
-    TriggerEvent('qb-clothing:client:onMenuClose')
+    TriggerEvent('ad-appearance:client:onMenuClose')
     cb('ok')
 end)
 RegisterNUICallback('getCatergoryItems', function(data, cb)
@@ -1562,7 +1562,7 @@ RegisterNUICallback('updateSkinOnInput', function(data, cb)
     cb('ok')
 end)
 RegisterNUICallback('removeOutfit', function(data, cb)
-    TriggerServerEvent('qb-clothing:server:removeOutfit', data.outfitName, data.outfitId)
+    TriggerServerEvent('ad-appearance:server:removeOutfit', data.outfitName, data.outfitId)
     QBCore.Functions.Notify(Lang:t('notify.info_deleteOutfit', {outfit = data.outfitName}))
     cb('ok')
 end)
@@ -1726,7 +1726,7 @@ function loadStores()
                     options = {
                         {
                             type = "client",
-                            event = "qb-clothing:client:openOutfitMenu",
+                            event = "ad-appearance:client:openOutfitMenu",
                             icon = "fas fa-sign-in-alt",
                             label = Lang:t("store.outfitchanger")
                         }
@@ -1838,7 +1838,7 @@ function loadStores()
                     elseif zoneName == 'outfit' then
                         if IsControlJustReleased(0, 38) then
                             customCamLocation = nil
-                            TriggerEvent('qb-clothing:client:openOutfitMenu')
+                            TriggerEvent('ad-appearance:client:openOutfitMenu')
                         end
                     elseif not QBCore.Shared.QBJobsStatus then
                         if IsControlJustReleased(0, 38) then

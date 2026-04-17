@@ -1,6 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
-RegisterServerEvent("qb-clothing:saveSkin", function(model, skin)
+RegisterServerEvent("ad-appearance:saveSkin", function(model, skin)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     if model ~= nil and skin ~= nil then
@@ -41,15 +41,15 @@ RegisterServerEvent("qb-clothes:saveOutfit", function(outfitName, model, skinDat
         }, function()
             local result = MySQL.query.await('SELECT * FROM player_outfits WHERE citizenid = ?', { Player.PlayerData.citizenid })
             if result[1] ~= nil then
-                TriggerClientEvent('qb-clothing:client:reloadOutfits', src, result)
+                TriggerClientEvent('ad-appearance:client:reloadOutfits', src, result)
             else
-                TriggerClientEvent('qb-clothing:client:reloadOutfits', src, nil)
+                TriggerClientEvent('ad-appearance:client:reloadOutfits', src, nil)
             end
         end)
     end
 end)
 
-RegisterServerEvent("qb-clothing:server:removeOutfit", function(outfitName, outfitId)
+RegisterServerEvent("ad-appearance:server:removeOutfit", function(outfitName, outfitId)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     MySQL.query('DELETE FROM player_outfits WHERE citizenid = ? AND outfitname = ? AND outfitId = ?', {
@@ -59,14 +59,14 @@ RegisterServerEvent("qb-clothing:server:removeOutfit", function(outfitName, outf
     }, function()
         local result = MySQL.query.await('SELECT * FROM player_outfits WHERE citizenid = ?', { Player.PlayerData.citizenid })
         if result[1] ~= nil then
-            TriggerClientEvent('qb-clothing:client:reloadOutfits', src, result)
+            TriggerClientEvent('ad-appearance:client:reloadOutfits', src, result)
         else
-            TriggerClientEvent('qb-clothing:client:reloadOutfits', src, nil)
+            TriggerClientEvent('ad-appearance:client:reloadOutfits', src, nil)
         end
     end)
 end)
 
-QBCore.Functions.CreateCallback('qb-clothing:server:getOutfits', function(source, cb)
+QBCore.Functions.CreateCallback('ad-appearance:server:getOutfits', function(source, cb)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local anusVal = {}
