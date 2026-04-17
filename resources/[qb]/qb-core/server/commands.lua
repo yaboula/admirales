@@ -4,6 +4,7 @@ QBCore.Commands.IgnoreList = { -- Ignore old perm levels while keeping backwards
     ['god'] = true,            -- We don't need to create an ace because god is allowed all commands
     ['user'] = true            -- We don't need to create an ace because builtin.everyone
 }
+local customChatInstalled = GetResourceState('0r-chat') ~= 'missing'
 
 CreateThread(function() -- Add ace to node for perm checking
     local permissions = QBCore.Config.Server.Permissions
@@ -270,54 +271,57 @@ QBCore.Commands.Add('setgang', Lang:t('command.setgang.help'), { { name = Lang:t
 end, 'admin')
 
 -- Out of Character Chat
-QBCore.Commands.Add('ooc', Lang:t('command.ooc.help'), {}, false, function(source, args)
-    local message = table.concat(args, ' ')
-    local Players = QBCore.Functions.GetPlayers()
-    local Player = QBCore.Functions.GetPlayer(source)
-    local playerCoords = GetEntityCoords(GetPlayerPed(source))
-    for _, v in pairs(Players) do
-        if v == source then
-            TriggerClientEvent('chat:addMessage', v, {
-                color = QBCore.Config.Commands.OOCColor,
-                multiline = true,
-                args = { 'OOC | ' .. GetPlayerName(source), message }
-            })
-        elseif #(playerCoords - GetEntityCoords(GetPlayerPed(v))) < 20.0 then
-            TriggerClientEvent('chat:addMessage', v, {
-                color = QBCore.Config.Commands.OOCColor,
-                multiline = true,
-                args = { 'OOC | ' .. GetPlayerName(source), message }
-            })
-        elseif QBCore.Functions.HasPermission(v, 'admin') then
-            if QBCore.Functions.IsOptin(v) then
+if not customChatInstalled then
+    QBCore.Commands.Add('ooc', Lang:t('command.ooc.help'), {}, false, function(source, args)
+        local message = table.concat(args, ' ')
+        local Players = QBCore.Functions.GetPlayers()
+        local Player = QBCore.Functions.GetPlayer(source)
+        local playerCoords = GetEntityCoords(GetPlayerPed(source))
+        for _, v in pairs(Players) do
+            if v == source then
                 TriggerClientEvent('chat:addMessage', v, {
                     color = QBCore.Config.Commands.OOCColor,
                     multiline = true,
-                    args = { 'Proximity OOC | ' .. GetPlayerName(source), message }
+                    args = { 'OOC | ' .. GetPlayerName(source), message }
                 })
-                TriggerEvent('qb-log:server:CreateLog', 'ooc', 'OOC', 'white', '**' .. GetPlayerName(source) .. '** (CitizenID: ' .. Player.PlayerData.citizenid .. ' | ID: ' .. source .. ') **Message:** ' .. message, false)
+            elseif #(playerCoords - GetEntityCoords(GetPlayerPed(v))) < 20.0 then
+                TriggerClientEvent('chat:addMessage', v, {
+                    color = QBCore.Config.Commands.OOCColor,
+                    multiline = true,
+                    args = { 'OOC | ' .. GetPlayerName(source), message }
+                })
+            elseif QBCore.Functions.HasPermission(v, 'admin') then
+                if QBCore.Functions.IsOptin(v) then
+                    TriggerClientEvent('chat:addMessage', v, {
+                        color = QBCore.Config.Commands.OOCColor,
+                        multiline = true,
+                        args = { 'Proximity OOC | ' .. GetPlayerName(source), message }
+                    })
+                    TriggerEvent('qb-log:server:CreateLog', 'ooc', 'OOC', 'white', '**' .. GetPlayerName(source) .. '** (CitizenID: ' .. Player.PlayerData.citizenid .. ' | ID: ' .. source .. ') **Message:** ' .. message, false)
+                end
             end
         end
-    end
-end, 'user')
+    end, 'user')
+end
 
 -- Me command
-
-QBCore.Commands.Add('me', Lang:t('command.me.help'), { { name = Lang:t('command.me.params.message.name'), help = Lang:t('command.me.params.message.help') } }, false, function(source, args)
-    if #args < 1 then
-        TriggerClientEvent('QBCore:Notify', source, Lang:t('error.missing_args2'), 'error')
-        return
-    end
-    local ped = GetPlayerPed(source)
-    local pCoords = GetEntityCoords(ped)
-    local msg = table.concat(args, ' '):gsub('[~<].-[>~]', '')
-    local Players = QBCore.Functions.GetPlayers()
-    for i = 1, #Players do
-        local Player = Players[i]
-        local target = GetPlayerPed(Player)
-        local tCoords = GetEntityCoords(target)
-        if target == ped or #(pCoords - tCoords) < 20 then
-            TriggerClientEvent('QBCore:Command:ShowMe3D', Player, source, msg)
+if not customChatInstalled then
+    QBCore.Commands.Add('me', Lang:t('command.me.help'), { { name = Lang:t('command.me.params.message.name'), help = Lang:t('command.me.params.message.help') } }, false, function(source, args)
+        if #args < 1 then
+            TriggerClientEvent('QBCore:Notify', source, Lang:t('error.missing_args2'), 'error')
+            return
         end
-    end
-end, 'user')
+        local ped = GetPlayerPed(source)
+        local pCoords = GetEntityCoords(ped)
+        local msg = table.concat(args, ' '):gsub('[~<].-[>~]', '')
+        local Players = QBCore.Functions.GetPlayers()
+        for i = 1, #Players do
+            local Player = Players[i]
+            local target = GetPlayerPed(Player)
+            local tCoords = GetEntityCoords(target)
+            if target == ped or #(pCoords - tCoords) < 20 then
+                TriggerClientEvent('QBCore:Command:ShowMe3D', Player, source, msg)
+            end
+        end
+    end, 'user')
+end

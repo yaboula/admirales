@@ -90,7 +90,11 @@ function lib.__addCommand(group, name, callback, parameters, help)
                             if source < 1 then
                                 return print(invalid)
                             else
-                                return TriggerClientEvent('chat:addMessage', source, invalid)
+                                return TriggerClientEvent('chat:addMessage', source, {
+                                    color = { 255, 0, 0 },
+                                    multiline = true,
+                                    args = { 'SYSTEM', invalid }
+                                })
                             end
                         end
                     end

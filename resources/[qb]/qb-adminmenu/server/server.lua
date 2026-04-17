@@ -16,6 +16,7 @@ local permissions = {
     ['inventory'] = 'admin',
     ['clothing'] = 'admin'
 }
+local customChatInstalled = GetResourceState('0r-chat') ~= 'missing'
 
 function GetQBPlayers()
     local playerReturn = {}
@@ -332,15 +333,17 @@ QBCore.Commands.Add('admincar', Lang:t('commands.save_vehicle_garage'), {}, fals
     TriggerClientEvent('qb-admin:client:SaveCar', source)
 end, 'admin')
 
-QBCore.Commands.Add('announce', Lang:t('commands.make_announcement'), {}, false, function(_, args)
-    local msg = table.concat(args, ' ')
-    if msg == '' then return end
-    TriggerClientEvent('chat:addMessage', -1, {
-        color = { 255, 0, 0 },
-        multiline = true,
-        args = { 'Announcement', msg }
-    })
-end, 'admin')
+if not customChatInstalled then
+    QBCore.Commands.Add('announce', Lang:t('commands.make_announcement'), {}, false, function(_, args)
+        local msg = table.concat(args, ' ')
+        if msg == '' then return end
+        TriggerClientEvent('chat:addMessage', -1, {
+            color = { 255, 0, 0 },
+            multiline = true,
+            args = { 'Announcement', msg }
+        })
+    end, 'admin')
+end
 
 QBCore.Commands.Add('admin', Lang:t('commands.open_admin'), {}, false, function(source, _)
     TriggerClientEvent('qb-admin:client:openMenu', source)
@@ -390,8 +393,16 @@ QBCore.Commands.Add('warn', Lang:t('commands.warn_a_player'), { { name = 'ID', h
     local msg = table.concat(args, ' ')
     local warnId = 'WARN-' .. math.random(1111, 9999)
     if targetPlayer ~= nil then
-        TriggerClientEvent('chat:addMessage', targetPlayer.PlayerData.source, { args = { 'SYSTEM', Lang:t('info.warning_chat_message') .. GetPlayerName(source) .. ',' .. Lang:t('info.reason') .. ': ' .. msg }, color = 255, 0, 0 })
-        TriggerClientEvent('chat:addMessage', source, { args = { 'SYSTEM', Lang:t('info.warning_staff_message') .. GetPlayerName(targetPlayer.PlayerData.source) .. ', for: ' .. msg }, color = 255, 0, 0 })
+        TriggerClientEvent('chat:addMessage', targetPlayer.PlayerData.source, {
+            color = { 255, 0, 0 },
+            multiline = true,
+            args = { 'SYSTEM', Lang:t('info.warning_chat_message') .. GetPlayerName(source) .. ',' .. Lang:t('info.reason') .. ': ' .. msg }
+        })
+        TriggerClientEvent('chat:addMessage', source, {
+            color = { 255, 0, 0 },
+            multiline = true,
+            args = { 'SYSTEM', Lang:t('info.warning_staff_message') .. GetPlayerName(targetPlayer.PlayerData.source) .. ', for: ' .. msg }
+        })
         MySQL.insert('INSERT INTO player_warns (senderIdentifier, targetIdentifier, reason, warnId) VALUES (?, ?, ?, ?)', {
             senderPlayer.PlayerData.license,
             targetPlayer.PlayerData.license,
@@ -407,14 +418,22 @@ QBCore.Commands.Add('checkwarns', Lang:t('commands.check_player_warning'), { { n
     if args[2] == nil then
         local targetPlayer = QBCore.Functions.GetPlayer(tonumber(args[1]))
         local result = MySQL.query.await('SELECT * FROM player_warns WHERE targetIdentifier = ?', { targetPlayer.PlayerData.license })
-        TriggerClientEvent('chat:addMessage', source, 'SYSTEM', 'warning', targetPlayer.PlayerData.name .. ' has ' .. tablelength(result) .. ' warnings!')
+        TriggerClientEvent('chat:addMessage', source, {
+            color = { 255, 0, 0 },
+            multiline = true,
+            args = { 'SYSTEM', targetPlayer.PlayerData.name .. ' has ' .. tablelength(result) .. ' warnings!' }
+        })
     else
         local targetPlayer = QBCore.Functions.GetPlayer(tonumber(args[1]))
         local warnings = MySQL.query.await('SELECT * FROM player_warns WHERE targetIdentifier = ?', { targetPlayer.PlayerData.license })
         local selectedWarning = tonumber(args[2])
         if warnings[selectedWarning] ~= nil then
             local sender = QBCore.Functions.GetPlayer(warnings[selectedWarning].senderIdentifier)
-            TriggerClientEvent('chat:addMessage', source, 'SYSTEM', 'warning', targetPlayer.PlayerData.name .. ' has been warned by ' .. sender.PlayerData.name .. ', Reason: ' .. warnings[selectedWarning].reason)
+            TriggerClientEvent('chat:addMessage', source, {
+                color = { 255, 0, 0 },
+                multiline = true,
+                args = { 'SYSTEM', targetPlayer.PlayerData.name .. ' has been warned by ' .. sender.PlayerData.name .. ', Reason: ' .. warnings[selectedWarning].reason }
+            })
         end
     end
 end, 'admin')
@@ -424,7 +443,11 @@ QBCore.Commands.Add('delwarn', Lang:t('commands.delete_player_warning'), { { nam
     local warnings = MySQL.query.await('SELECT * FROM player_warns WHERE targetIdentifier = ?', { targetPlayer.PlayerData.license })
     local selectedWarning = tonumber(args[2])
     if warnings[selectedWarning] ~= nil then
-        TriggerClientEvent('chat:addMessage', source, 'SYSTEM', 'warning', 'You have deleted warning (' .. selectedWarning .. ') , Reason: ' .. warnings[selectedWarning].reason)
+        TriggerClientEvent('chat:addMessage', source, {
+            color = { 255, 0, 0 },
+            multiline = true,
+            args = { 'SYSTEM', 'You have deleted warning (' .. selectedWarning .. ') , Reason: ' .. warnings[selectedWarning].reason }
+        })
         MySQL.query('DELETE FROM player_warns WHERE warnId = ?', { warnings[selectedWarning].warnId })
     end
 end, 'admin')
