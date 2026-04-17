@@ -169,17 +169,45 @@ end
 -- NUI Calls
 
 function QBCore.Functions.Notify(text, texttype, length, icon)
-    local message = {
-        action = 'notify',
-        type = texttype or 'primary',
-        length = length or 5000,
-    }
+    local notifyType = texttype or 'primary'
+    local notifyLength = length or 5000
+    local notifyText = 'Placeholder'
+    local notifyCaption = nil
 
     if type(text) == 'table' then
-        message.text = text.text or 'Placeholder'
-        message.caption = text.caption or 'Placeholder'
+        notifyText = text.text or 'Placeholder'
+        notifyCaption = text.caption
     else
-        message.text = text
+        notifyText = text or 'Placeholder'
+    end
+
+    if GetResourceState('JustNotify') == 'started' then
+        local justNotifyTypeMap = {
+            primary = 'info',
+            success = 'success',
+            error = 'error',
+            inform = 'info',
+            warning = 'warning',
+            police = 'info',
+            ambulance = 'info'
+        }
+
+        local normalizedType = type(notifyType) == 'string' and string.lower(notifyType) or 'info'
+        local justType = justNotifyTypeMap[normalizedType] or 'info'
+        local justTitle = notifyCaption or 'Notification'
+        exports['JustNotify']:Notify(justTitle, notifyText, notifyLength, justType)
+        return
+    end
+
+    local message = {
+        action = 'notify',
+        type = notifyType,
+        length = notifyLength,
+        text = notifyText,
+    }
+
+    if notifyCaption then
+        message.caption = notifyCaption
     end
 
     if icon then

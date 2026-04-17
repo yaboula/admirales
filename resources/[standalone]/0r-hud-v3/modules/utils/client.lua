@@ -10,6 +10,23 @@ local Utils = {}
 ---@param duration number
 ---@param description string
 function Utils.Notify(title, type, duration, description)
+    if GetResourceState('JustNotify') == 'started' then
+        local justNotifyTypeMap = {
+            inform = 'info',
+            success = 'success',
+            error = 'error',
+            warning = 'warning'
+        }
+
+        local normalizedType = string.lower(type or 'inform')
+        local justType = justNotifyTypeMap[normalizedType] or 'info'
+        local notifyText = description or title or 'Notification'
+        local notifyTitle = description and title or 'Notification'
+
+        exports['JustNotify']:Notify(notifyTitle, notifyText, duration or 5000, justType)
+        return
+    end
+
     lib.notify({
         title = title,
         description = description,

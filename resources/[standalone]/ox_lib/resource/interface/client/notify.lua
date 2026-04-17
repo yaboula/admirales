@@ -35,6 +35,31 @@ function lib.notify(data)
     data.sound = nil
     data.position = data.position or settings.notification_position
 
+    if GetResourceState('JustNotify') == 'started' then
+        local typeMap = {
+            info = 'info',
+            inform = 'info',
+            warning = 'warning',
+            success = 'success',
+            error = 'error',
+        }
+
+        local normalizedType = type(data.type) == 'string' and string.lower(data.type) or 'info'
+        local notifyType = typeMap[normalizedType] or 'info'
+
+        local title, message
+        if data.description then
+            title = data.title or 'Notification'
+            message = data.description
+        else
+            title = 'Notification'
+            message = data.title or 'Notification'
+        end
+
+        exports['JustNotify']:Notify(title, message, data.duration or 5000, notifyType)
+        return
+    end
+
     SendNUIMessage({
         action = 'notify',
         data = data
