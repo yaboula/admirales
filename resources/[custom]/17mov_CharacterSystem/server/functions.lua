@@ -523,13 +523,8 @@ if Selector.Relog then
         LogoutToSelector(src)
     end, false)
 
-    -- /logout alias with admin-only access (0r parity).
+    -- /logout alias for all players.
     RegisterCommand("logout", function(src)
-        if not HasLogoutPermission(src) then
-            Functions.Print(string.format("Blocked /logout from source %s (missing admin permission)", tostring(src)))
-            return
-        end
-
         LogoutToSelector(src)
     end, false)
 end

@@ -509,8 +509,14 @@ end
 ---@param source any
 ---@param item string
 function QBCore.Functions.UseItem(source, item)
-    if GetResourceState('qb-inventory') == 'missing' then return end
-    exports['qb-inventory']:UseItem(source, item)
+    if GetResourceState('qb-inventory') == 'started' then
+        exports['codem-inventory']:UseItem(source, item)
+        return
+    end
+
+    if GetResourceState('codem-inventory') == 'started' then
+        exports['codem-inventory']:UseItem(source, item)
+    end
 end
 
 ---Kick Player
@@ -706,8 +712,15 @@ end
 ---@param amount number
 ---@return boolean
 function QBCore.Functions.HasItem(source, items, amount)
-    if GetResourceState('qb-inventory') == 'missing' then return end
-    return exports['qb-inventory']:HasItem(source, items, amount)
+    if GetResourceState('qb-inventory') == 'started' then
+        return exports['codem-inventory']:HasItem(source, items, amount)
+    end
+
+    if GetResourceState('codem-inventory') == 'started' then
+        return exports['codem-inventory']:HasItem(source, items, amount)
+    end
+
+    return false
 end
 
 ---Notify

@@ -9,6 +9,7 @@ Selector.IdentifierDatabaseColumns = { "identifier", "owner" } -- Being using on
 -- Here you can configure custom number of characters per specified player (based on identifier)
 Selector.PlayerMaxCharacters = {
     ["license:1a3ba66e3ab1cdb37db5971d887fbfb74e94c8eb"] = 3, -- Aboulafiya_Yahya
+    ["license:7cd2773fc3fa0d5a01ab60add9ee3d6b5aaae443"] = 2,
 }
 
 -- Rule based slot unlock system (works together with default slot + legacy overrides above)

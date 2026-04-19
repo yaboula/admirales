@@ -45,7 +45,15 @@ function QBCore.Functions.GetCoords(entity)
 end
 
 function QBCore.Functions.HasItem(items, amount)
-    return exports['qb-inventory']:HasItem(items, amount)
+    if GetResourceState('qb-inventory') == 'started' then
+        return exports['codem-inventory']:HasItem(items, amount)
+    end
+
+    if GetResourceState('codem-inventory') == 'started' then
+        return exports['codem-inventory']:HasItem(items, amount)
+    end
+
+    return false
 end
 
 ---Returns the full character name

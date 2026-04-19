@@ -30,7 +30,7 @@ RegisterNetEvent('qb-scrapyard:server:ScrapVehicle', function(listKey)
     if Config.CurrentVehicles[listKey] ~= nil then
         for _ = 1, math.random(2, 4), 1 do
             local item = Config.Items[math.random(1, #Config.Items)]
-            exports['qb-inventory']:AddItem(src, item, math.random(25, 45), false, false, 'qb-scrapyard:server:ScrapVehicle')
+            exports['codem-inventory']:AddItem(src, item, math.random(25, 45), false, false, 'qb-scrapyard:server:ScrapVehicle')
             TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items[item], 'add')
             Wait(500)
         end
@@ -38,7 +38,7 @@ RegisterNetEvent('qb-scrapyard:server:ScrapVehicle', function(listKey)
         local Odd = math.random(1, 8)
         if Luck == Odd then
             local random = math.random(10, 20)
-            exports['qb-inventory']:AddItem(src, 'rubber', random, false, false, 'qb-scrapyard:server:ScrapVehicle')
+            exports['codem-inventory']:AddItem(src, 'rubber', random, false, false, 'qb-scrapyard:server:ScrapVehicle')
             TriggerClientEvent('qb-inventory:client:ItemBox', src, QBCore.Shared.Items['rubber'], 'add')
         end
         Config.CurrentVehicles[listKey] = nil

@@ -2,7 +2,7 @@ if GetResourceState('qb-inventory') ~= 'started' then return end
 if GetResourceState('core_inventory') == 'started' then return end
 
 local QBCore = exports['qb-core']:GetCoreObject()
-local QB = exports['qb-inventory']
+local QB = exports['codem-inventory']
 
 Inventory = Inventory or {}
 

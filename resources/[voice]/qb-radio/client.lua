@@ -99,7 +99,15 @@ local function IsRadioOn()
 end
 
 local function DoRadioCheck()
-    hasRadio = QBCore.Functions.HasItem(Config.RadioItem, 1)
+    local ok, result = pcall(function()
+        return QBCore.Functions.HasItem(Config.RadioItem, 1)
+    end)
+
+    if ok then
+        hasRadio = result and true or false
+    else
+        hasRadio = false
+    end
 end
 
 --Exports

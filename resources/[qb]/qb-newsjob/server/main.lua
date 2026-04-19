@@ -6,10 +6,11 @@ RegisterNetEvent('qb-newsjob:server:addVehicleItems', function(plate)
     if not Player or Player.PlayerData.job.name ~= 'reporter' then return end
     if not exports['qb-vehiclekeys']:HasKeys(src, plate) then return end
 
-    exports['qb-inventory']:CreateInventory('trunk-' .. plate)
+    local stashId = 'trunk-' .. plate
+    exports['codem-inventory']:CreateInventory(stashId)
 
     for slot, item in pairs(Config.VehicleItems) do
-        exports['qb-inventory']:AddItem('trunk-' .. plate, item.name, item.amount, slot, item.info, 'qb-newsjob:vehicleItems')
+        exports['codem-inventory']:AddStashItem(stashId, item.name, item.amount, slot, item.info)
     end
 end)
 
