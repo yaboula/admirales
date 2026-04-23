@@ -1,3 +1,56 @@
+-- [SECFIX-C5] Session tracker de vehiculos abiertos (trunk / glovebox).
+-- Antes un cliente podia mandar swapData.plate arbitrario y transferir items
+-- desde/hacia el vehiculo de CUALQUIER jugador sin siquiera estar cerca.
+_G.ActiveVehicleSession = _G.ActiveVehicleSession or {}
+_G._RegisterVehicleSession = _G._RegisterVehicleSession or function(playerId, plate, kind)
+    if not playerId or not plate then return end
+    local key = tonumber(playerId)
+    _G.ActiveVehicleSession[key] = _G.ActiveVehicleSession[key] or {}
+    _G.ActiveVehicleSession[key][kind or "trunk"] = {
+        plate = tostring(plate),
+        openedAt = os.time()
+    }
+end
+_G._ValidateVehicleSession = _G._ValidateVehicleSession or function(playerId, plate, kind)
+    local bucket = _G.ActiveVehicleSession[tonumber(playerId)]
+    if not bucket then return false, "no-session" end
+    local s = bucket[kind or "trunk"]
+    if not s then return false, "no-kind-session" end
+    if tostring(s.plate) ~= tostring(plate) then return false, "plate-mismatch" end
+    if (os.time() - (s.openedAt or 0)) > 900 then return false, "expired" end
+    return true
+end
+if not _G._VehicleSessionDropHookInstalled then
+    AddEventHandler('playerDropped', function()
+        _G.ActiveVehicleSession[tonumber(source)] = nil
+    end)
+    _G._VehicleSessionDropHookInstalled = true
+end
+-- Server-side proximity check (best-effort, tolerante a natives no disponibles)
+_G._IsPlayerNearVehiclePlate = _G._IsPlayerNearVehiclePlate or function(playerId, plate, maxDist)
+    local ok, allVeh = pcall(GetAllVehicles)
+    if not ok or type(allVeh) ~= "table" then return true end -- no podemos validar -> no bloqueamos
+    local ped = GetPlayerPed(playerId)
+    if not ped or ped == 0 then return true end
+    local pc = GetEntityCoords(ped)
+    local cleanPlate = tostring(plate):lower():gsub("%s+", "")
+    local dMax = (maxDist or 6.0) ^ 2
+    for _, veh in ipairs(allVeh) do
+        local okP, vp = pcall(GetVehicleNumberPlateText, veh)
+        if okP and vp then
+            local vpc = tostring(vp):lower():gsub("%s+", "")
+            if vpc == cleanPlate then
+                local vc = GetEntityCoords(veh)
+                local dx, dy, dz = (vc.x - pc.x), (vc.y - pc.y), (vc.z - pc.z)
+                if (dx*dx + dy*dy + dz*dz) <= dMax then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
 RegisterServerEvent("codem-inventory:server:openVehicleTrunk")
 AddEventHandler("codem-inventory:server:openVehicleTrunk", function(plate, maxWeight, slots, unknown)
     local playerId = source
@@ -12,6 +65,13 @@ AddEventHandler("codem-inventory:server:openVehicleTrunk", function(plate, maxWe
 
     plate = customToLower(plate)
     local correctedPlate = string.lower(string.gsub(plate, "%s+", ""))
+
+    -- [SECFIX-C5] verificar proximidad al vehiculo real + registrar sesion
+    if not _G._IsPlayerNearVehiclePlate(playerId, correctedPlate, 8.0) then
+        TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "openVehicleTrunk: jugador no cerca del vehiculo plate="..tostring(correctedPlate), event = "vehicle:remote-open" })
+        TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.VEHICLEPLATENOTFOUND)
+        return
+    end
 
     if not VehicleInventory[correctedPlate] then
         VehicleInventory[correctedPlate] = {
@@ -31,6 +91,7 @@ AddEventHandler("codem-inventory:server:openVehicleTrunk", function(plate, maxWe
         plate = correctedPlate
     }
 
+    _G._RegisterVehicleSession(playerId, correctedPlate, "trunk") -- [SECFIX-C5]
     TriggerClientEvent("codem-inventory:client:openVehicleTrunk", playerId, trunkData)
 end)
 
@@ -47,6 +108,16 @@ AddEventHandler("codem-inventory:SwapInventoryToVehicleTrunk", function(swapData
     swapData.newSlot = tostring(swapData.newSlot)
     swapData.oldSlot = tostring(swapData.oldSlot)
     local plate = customToLower(swapData.plate)
+
+    -- [SECFIX-C5] validar sesion de trunk
+    if _G._ValidateVehicleSession then
+        local ok, reason = _G._ValidateVehicleSession(playerId, plate, "trunk")
+        if not ok then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "SwapInventoryToVehicleTrunk: sesion invalida ("..tostring(reason)..") plate="..tostring(plate), event = "vehicle:no-session" })
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.VEHICLEPLATENOTFOUND)
+            return
+        end
+    end
 
     local playerInventory = PlayerServerInventory[identifier]
     if playerInventory then
@@ -194,7 +265,17 @@ AddEventHandler("codem-inventory:swapVehicleTrunkToInventory", function(swapData
 
     swapData.newSlot = tostring(swapData.newSlot)
     swapData.oldSlot = tostring(swapData.oldSlot)
-    local plate = tostring(swapData.plate)
+    local plate = customToLower(tostring(swapData.plate or ""))
+
+    -- [SECFIX-C5] validar sesion de trunk (stop remote looting)
+    if _G._ValidateVehicleSession then
+        local ok, reason = _G._ValidateVehicleSession(playerId, plate, "trunk")
+        if not ok then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "swapVehicleTrunkToInventory: sesion invalida ("..tostring(reason)..") plate="..tostring(plate), event = "vehicle:no-session" })
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.VEHICLEPLATENOTFOUND)
+            return
+        end
+    end
 
     local trunkInventory = VehicleInventory[plate]
     if trunkInventory then
@@ -307,7 +388,17 @@ AddEventHandler("codem-inventory:swapVehicleGloveboxToInventory", function(swapD
 
     swapData.newSlot = tostring(swapData.newSlot)
     swapData.oldSlot = tostring(swapData.oldSlot)
-    local plate = tostring(swapData.plate)
+    local plate = customToLower(tostring(swapData.plate or ""))
+
+    -- [SECFIX-C5] validar sesion de glovebox
+    if _G._ValidateVehicleSession then
+        local ok, reason = _G._ValidateVehicleSession(playerId, plate, "glovebox")
+        if not ok then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "swapVehicleGloveboxToInventory: sesion invalida ("..tostring(reason)..") plate="..tostring(plate), event = "vehicle:no-session" })
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.VEHICLEPLATENOTFOUND)
+            return
+        end
+    end
 
     local gloveboxInventory = GloveBoxInventory[plate]
     if gloveboxInventory then
@@ -1917,6 +2008,13 @@ AddEventHandler("codem-inventory:server:openVehicleGlovebox", function(plate, ma
 
     plate = customToLower(plate)
 
+    -- [SECFIX-C5] proximidad
+    if not _G._IsPlayerNearVehiclePlate(playerId, plate, 8.0) then
+        TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "openVehicleGlovebox: jugador no cerca del vehiculo plate="..tostring(plate), event = "vehicle:remote-open" })
+        TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.VEHICLEPLATENOTFOUND)
+        return
+    end
+
     if not GloveBoxInventory[plate] then
         GloveBoxInventory[plate] = {
             glovebox = {},
@@ -1934,6 +2032,7 @@ AddEventHandler("codem-inventory:server:openVehicleGlovebox", function(plate, ma
         plate = plate
     }
 
+    _G._RegisterVehicleSession(playerId, plate, "glovebox") -- [SECFIX-C5]
     TriggerClientEvent("codem-inventory:client:openVehicleGlovebox", playerId, gloveboxData)
 end)
 
@@ -1950,6 +2049,16 @@ AddEventHandler("codem-inventory:SwapInventoryToVehicleGlovebox", function(swapD
     swapData.newSlot = tostring(swapData.newSlot)
     swapData.oldSlot = tostring(swapData.oldSlot)
     local plate = customToLower(swapData.plate)
+
+    -- [SECFIX-C5] validar sesion de glovebox
+    if _G._ValidateVehicleSession then
+        local ok, reason = _G._ValidateVehicleSession(playerId, plate, "glovebox")
+        if not ok then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "SwapInventoryToVehicleGlovebox: sesion invalida ("..tostring(reason)..") plate="..tostring(plate), event = "vehicle:no-session" })
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.VEHICLEPLATENOTFOUND)
+            return
+        end
+    end
 
     local playerInventory = PlayerServerInventory[identifier]
     if playerInventory then
