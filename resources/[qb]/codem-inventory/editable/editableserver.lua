@@ -405,6 +405,25 @@ local item = playerInventory[tostring(weaponitem.slot)]
             Locales[Config.Language].notification['ITEMNOTFOUND'])
         return
     end
+
+    -- [SECFIX-CR5] validar que es un arma real (no un consumible con info.quality inyectada)
+    do
+        local isWeapon = false
+        if type(item.name) == "string" and item.name:sub(1, 7) == "weapon_" then isWeapon = true end
+        if item.type == "weapon" then isWeapon = true end
+        if not isWeapon then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(src), playerIdentifier = src, reason = "repairweapon: item no es arma name="..tostring(item.name), event = "repair:not-weapon" })
+            TriggerClientEvent('codem-inventory:client:notification', src, Locales[Config.Language].notification['UNKOWNWEAPONINFO'])
+            return
+        end
+        -- coerce numeric (el cliente podria haber inyectado string)
+        if item.info then
+            item.info.quality = tonumber(item.info.quality) or 100
+            item.info.repair = tonumber(item.info.repair) or 0
+            item.info.maxrepair = tonumber(item.info.maxrepair) or item.info.maxrepair
+        end
+    end
+
     if item.info and item.info.quality and item.info.quality < 100 then
         if item.info.maxrepair and item.info.repair and item.info.repair >= item.info.maxrepair then
             TriggerClientEvent('codem-inventory:client:notification', src,
@@ -426,7 +445,7 @@ local money = GetPlayerMoney(src, 'cash')
         RemoveMoney(src, 'cash', repairPrice)
 
         item.info.quality = 100
-        item.info.repair = item.info.repair + 1
+        item.info.repair = (tonumber(item.info.repair) or 0) + 1
         TriggerClientEvent('codem-inventory:client:notification', src,
             Locales[Config.Language].notification['WEAPONREPAIRED'])
         TriggerClientEvent('codem-inventory:refreshItemsDurability', src, tostring(item.slot), item)
