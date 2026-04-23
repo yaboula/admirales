@@ -68,12 +68,29 @@ RegisterNetEvent('codem-inventory:CreateLog', function(title, color, message, so
 end)
 
 
-RegisterNetEvent('codem-inventory:cheaterlogs', function(logdata)
+-- [SECFIX-CR4] Evento demoted de RegisterNetEvent a AddEventHandler:
+-- un cliente malicioso podia spamear el webhook de Discord con datos arbitrarios.
+-- Ahora solo triggers INTERNOS del servidor pueden emitir cheaterlogs.
+-- Ademas: anti-spam por source + normalizacion defensiva de campos.
+local _cheaterLogLastSent = {}
+AddEventHandler('codem-inventory:cheaterlogs', function(logdata)
+    -- Si viniera por red, source seria un numero > 0. Bloqueamos.
+    if source and tonumber(source) and tonumber(source) > 0 then
+        print(("[codem-inventory][SECFIX-CR4] Dropped net-sourced cheaterlogs from src=%s"):format(tostring(source)))
+        return
+    end
+    if type(logdata) ~= "table" then return end
+
+    local key = tostring(logdata.playerIdentifier or logdata.playername or "unknown")
+    local now = os.time()
+    if _cheaterLogLastSent[key] and (now - _cheaterLogLastSent[key]) < 2 then
+        return
+    end
+    _cheaterLogLastSent[key] = now
+
     local description = ""
-
-
-    description = "Oyuncu: **" .. logdata.playername .. "**\n"
-    description = description .. "Event: **" .. logdata.event .. "**\n"
+    description = "Oyuncu: **" .. tostring(logdata.playername or logdata.playerName or "unknown") .. "**\n"
+    description = description .. "Event: **" .. tostring(logdata.event or logdata.reason or "unknown") .. "**\n"
     local embedData = {
         {
             ['title'] = "Cheater Log",
