@@ -443,13 +443,49 @@ AddEventHandler("codem-inventory:swapShopToInventory", function(shopData, jobDat
         return
     end
 
-    if #shopData.amount <= 0 then
-        itemData.count = 1
-    else
-        itemData.count = shopData.amount
+    -- [SECFIX-C2] Validacion server-side de precio / cantidad / paymentMethod.
+    -- Antes el cliente enviaba price, count, grade y paymentMethod libremente, lo
+    -- que permitia comprar con precio negativo o cero, cantidades gigantes, o
+    -- pagar con metodos inexistentes. Ahora se forzan valores del servidor.
+    do
+        local serverItem, serverItemKey = nil, nil
+        if type(shopConfig.items) == "table" then
+            for k, v in pairs(shopConfig.items) do
+                if v and v.name == itemData.name then
+                    serverItem, serverItemKey = v, k
+                    break
+                end
+            end
+        end
+        if not serverItem then
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.ITEMNOTFOUND)
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "Shop: item no existe en shop config", event = "shop:item-spoof" })
+            return
+        end
+        itemData.price = tonumber(serverItem.price) or 0
+        itemData.grade = serverItem.grade
+        if itemData.price <= 0 then
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.ITEMNOTFOUND)
+            return
+        end
+        local pm = tostring(shopData.paymentMethod or "cash")
+        if pm ~= "cash" and pm ~= "bank" then
+            shopData.paymentMethod = "cash"
+        end
     end
 
-    itemData.count = tonumber(itemData.count)
+    local _reqAmount = tonumber(shopData.amount) or 0
+    if _reqAmount <= 0 then
+        itemData.count = 1
+    else
+        itemData.count = _reqAmount
+    end
+
+    itemData.count = tonumber(itemData.count) or 1
+    -- [SECFIX-C2] cap de cantidad por transaccion (anti abuso / anti overflow)
+    local MAX_BUY_PER_TX = 100
+    if itemData.count < 1 then itemData.count = 1 end
+    if itemData.count > MAX_BUY_PER_TX then itemData.count = MAX_BUY_PER_TX end
     itemData.price = tonumber(itemData.price)
 
     local emptySlot = FindFirstEmptySlot(playerInventory, Config.MaxSlots)
