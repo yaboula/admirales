@@ -1019,11 +1019,22 @@ exports('GetTotalWeight', GetTotalWeight)
 exports('CanCarryItem', CanCarryItem)
 
 
+-- [SECFIX-C1] Handler NEUTRALIZADO. Anteriormente permitia a cualquier cliente
+-- fijar arbitrariamente el valor de 'cash' en su inventario via TriggerServerEvent,
+-- obteniendo dinero infinito. El evento QBCore:Server:OnMoneyChange (abajo) ya
+-- mantiene el cash sincronizado de forma legitima, por lo que este handler es
+-- redundante. Cualquier trigger de red hacia este evento es considerado exploit.
 RegisterServerEvent('codem-inventory:CheckPlayerMoney', function(item)
     local src = source
-    if Config.CashItem then
-        SetInventoryItems(src, 'cash', tonumber(item))
-    end
+    if not src or src <= 0 then return end
+    local name = GetPlayerName(src) or "unknown"
+    print(("[codem-inventory][SECFIX-C1] Blocked CheckPlayerMoney exploit attempt from src=%s name=%s amount=%s"):format(tostring(src), tostring(name), tostring(item)))
+    TriggerEvent('codem-inventory:cheaterlogs', {
+        playerIdentifier = src,
+        playerName = name,
+        reason = "CheckPlayerMoney exploit (intento de set cash arbitrario)",
+        amount = tostring(item)
+    })
 end)
 
 AddEventHandler('QBCore:Server:OnMoneyChange', function(src, account, amount, changeType)
