@@ -1231,6 +1231,29 @@ AddEventHandler("codem-inventory:SwapGroundToInventory", function(swapData, grou
         return
     end
 
+    -- [SECFIX-CR2] Distance check: evitar recoger items a kilometros del jugador.
+    -- Antes cualquier cliente podia recoger cualquier grupo de items del suelo
+    -- conociendo solo el groundId (broadcasteado).
+    do
+        local g = ServerGround[groundId]
+        if g and g.coord then
+            local ped = GetPlayerPed(playerId)
+            if ped and ped ~= 0 then
+                local pc = GetEntityCoords(ped)
+                local gx, gy, gz = g.coord.x or g.coord[1], g.coord.y or g.coord[2], g.coord.z or g.coord[3]
+                if gx and gy and gz then
+                    local dx, dy, dz = (gx - pc.x), (gy - pc.y), (gz - pc.z)
+                    local distSq = dx*dx + dy*dy + dz*dz
+                    if distSq > 25.0 then -- > 5 metros
+                        TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = ("SwapGroundToInventory: distancia %.1fm a groundId=%s"):format(math.sqrt(distSq), tostring(groundId)), event = "ground:remote-pickup" })
+                        TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.ITEMNOTFOUND)
+                        return
+                    end
+                end
+            end
+        end
+    end
+
     local playerInventory = PlayerServerInventory[identifier]
     if playerInventory then
         playerInventory = PlayerServerInventory[identifier].inventory
