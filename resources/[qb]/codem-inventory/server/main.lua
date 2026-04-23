@@ -579,6 +579,46 @@ AddEventHandler("codem-inventory:openbackpack", function(backpackItem)
     end
 
     local itemInfo = backpackItem.info
+
+    -- [SECFIX-C4] Ownership check: el cliente enviaba libremente backpackItem.info.series
+    -- permitiendo abrir la mochila de cualquier otro jugador con conocer su series.
+    -- Ahora verificamos que el jugador posea realmente un item con ese series.
+    do
+        local series = itemInfo.series
+        if not series or tostring(series) == "" then
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.ITEMINFONOTFOUND)
+            return
+        end
+        local playerInv = PlayerServerInventory[identifier] and PlayerServerInventory[identifier].inventory
+        local ownsBag = false
+        local ownedSlot, ownedWeight = nil, nil
+        if type(playerInv) == "table" then
+            for _, invItem in pairs(playerInv) do
+                if type(invItem) == "table" and invItem.info and invItem.info.series == series then
+                    local cfg = Config.Itemlist[invItem.name]
+                    if cfg and (cfg.type == "bag" or cfg.stash or cfg.backpack or invItem.info.weight) then
+                        ownsBag = true
+                        ownedSlot = invItem.slot
+                        ownedWeight = invItem.info.weight or (cfg and cfg.weight)
+                        break
+                    end
+                    ownsBag = true
+                    ownedSlot = invItem.slot
+                    ownedWeight = invItem.info.weight
+                    break
+                end
+            end
+        end
+        if not ownsBag then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "openbackpack: series no pertenece al jugador", event = "backpack:ownership" })
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.ITEMINFONOTFOUND)
+            return
+        end
+        -- forzar valores server-side (ignorar slot/weight del cliente)
+        itemInfo.slot = ownedSlot or itemInfo.slot
+        itemInfo.weight = ownedWeight or itemInfo.weight
+    end
+
     local backpackData = {
         inventory = {},
         slot = itemInfo.slot or 0,
