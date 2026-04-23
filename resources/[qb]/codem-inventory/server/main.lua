@@ -643,6 +643,10 @@ AddEventHandler("codem-inventory:openbackpack", function(backpackItem)
         }
     end
 
+    -- [SECFIX-C3] registrar sesion de stash (backpack) para validar swaps
+    if _G._RegisterStashSession then
+        _G._RegisterStashSession(playerId, itemInfo.series, "backpack")
+    end
     TriggerClientEvent("codem-inventory:GetBackPackItem", playerId, backpackData)
 end)-- Global variables
 Core = nil
@@ -1354,9 +1358,57 @@ function GenerateGroundId()
     return groundId
 end
 
+-- [SECFIX-C3/C6] Session tracker de stashes abiertos por cada jugador.
+-- Evita que un cliente invoque swapStashToInventory/SwapInventoryToStash
+-- contra un stashId arbitrario (policia, gangs, backpacks ajenas) sin haberlo
+-- abierto legitimamente. Se limpia al desconectar y por timeout.
+_G.ActiveStashSession = _G.ActiveStashSession or {}
+_G._RegisterStashSession = _G._RegisterStashSession or function(playerId, stashId, sessionType)
+    if not playerId or not stashId then return end
+    _G.ActiveStashSession[tonumber(playerId)] = {
+        stashId = tostring(stashId),
+        openedAt = os.time(),
+        sessionType = sessionType or "stash"
+    }
+end
+_G._ClearStashSession = _G._ClearStashSession or function(playerId)
+    _G.ActiveStashSession[tonumber(playerId)] = nil
+end
+_G._ValidateStashSession = _G._ValidateStashSession or function(playerId, stashId)
+    local sess = _G.ActiveStashSession[tonumber(playerId)]
+    if not sess then return false, "no-session" end
+    if tostring(sess.stashId) ~= tostring(stashId) then return false, "mismatch" end
+    -- session no mas vieja de 10 minutos (evita ataques de replay a posteriori)
+    if (os.time() - (sess.openedAt or 0)) > 600 then return false, "expired" end
+    return true
+end
+if not _G._StashSessionDropHookInstalled then
+    AddEventHandler('playerDropped', function()
+        _G._ClearStashSession(source)
+    end)
+    _G._StashSessionDropHookInstalled = true
+end
+
 -- Stash operations
 RegisterServerEvent("codem-inventory:server:openserverstash")
 AddEventHandler("codem-inventory:server:openserverstash", function(playerId, stashName, slots, maxWeight, label)
+    -- [SECFIX-C6] forzar playerId al source real. Antes el cliente podia mandar
+    -- cualquier playerId, potencialmente afectando la sesion de otro jugador.
+    local realSource = tonumber(source)
+    if realSource and realSource > 0 then
+        if tonumber(playerId) ~= realSource then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(realSource), playerIdentifier = realSource, reason = "openserverstash: playerId spoofing", event = "stash:spoof" })
+        end
+        playerId = realSource
+    end
+    -- [SECFIX-C6] clamp defensivo de slots/maxWeight (cliente enviaba libremente).
+    slots = tonumber(slots) or 50
+    if slots < 1 then slots = 1 end
+    if slots > 500 then slots = 500 end
+    maxWeight = tonumber(maxWeight) or 150000
+    if maxWeight < 1000 then maxWeight = 1000 end
+    if maxWeight > 10000000 then maxWeight = 10000000 end
+
     if slots and slots > 500 then
         slots = 500
     end
@@ -1388,6 +1440,7 @@ AddEventHandler("codem-inventory:server:openserverstash", function(playerId, sta
     end
 
     UpdateStashDatabase(stashName, stashInventory)
+    _G._RegisterStashSession(playerId, stashName, "openserverstash") -- [SECFIX-C3]
     TriggerClientEvent("codem-inventory:client:openstash", playerId, stashData)
 end)
 
@@ -1395,6 +1448,15 @@ end)
 RegisterServerEvent("inventory:server:OpenInventory")
 AddEventHandler("inventory:server:OpenInventory", function(inventoryType, stashName, options)
     local playerId = source
+    -- [SECFIX-C3] no dejamos que el cliente abra stashes por nombre con options libres
+    if type(options) == "table" then
+        options.slots = tonumber(options.slots) or options.slots
+        options.weight = tonumber(options.weight) or options.weight
+        options.maxweight = tonumber(options.maxweight) or options.maxweight
+        if tonumber(options.slots) and tonumber(options.slots) > 500 then options.slots = 500 end
+        if tonumber(options.weight) and tonumber(options.weight) > 10000000 then options.weight = 10000000 end
+        if tonumber(options.maxweight) and tonumber(options.maxweight) > 10000000 then options.maxweight = 10000000 end
+    end
     
     if inventoryType == "traphouse" then
         local label = "STASH"
@@ -1424,6 +1486,7 @@ AddEventHandler("inventory:server:OpenInventory", function(inventoryType, stashN
         end
 
         UpdateStashDatabase(stashName, stashInventory)
+        _G._RegisterStashSession(playerId, stashName, "traphouse") -- [SECFIX-C3]
         TriggerClientEvent("codem-inventory:client:openstash", playerId, stashData)
         
     elseif inventoryType == "stash" then
@@ -1463,6 +1526,7 @@ AddEventHandler("inventory:server:OpenInventory", function(inventoryType, stashN
         end
 
         UpdateStashDatabase(stashName, stashInventory)
+        _G._RegisterStashSession(playerId, stashName, "stash") -- [SECFIX-C3]
         TriggerClientEvent("codem-inventory:client:openstash", playerId, stashData)
     end
 end)
@@ -1509,6 +1573,7 @@ AddEventHandler("codem-inventory:server:openstash", function(stashName, slots, m
     end
 
     UpdateStashDatabase(stashName, stashInventory)
+    _G._RegisterStashSession(playerId, stashName, "openstash") -- [SECFIX-C3]
     TriggerClientEvent("codem-inventory:client:openstash", playerId, stashData)
 end)
 
@@ -1521,6 +1586,16 @@ AddEventHandler("codem-inventory:SwapInventoryToStash", function(swapData)
     if not identifier then
         TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.IDENTIFIERNOTFOUND)
         return
+    end
+
+    -- [SECFIX-C3] validar que el jugador ha abierto ese stash antes de poder depositar
+    if swapData and swapData.stashId and _G._ValidateStashSession then
+        local ok, reason = _G._ValidateStashSession(playerId, swapData.stashId)
+        if not ok then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "SwapInventoryToStash: sesion invalida ("..tostring(reason)..") stash="..tostring(swapData.stashId), event = "stash:no-session" })
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.STASHINVENTORYNOTFOUND or "Invalid stash session")
+            return
+        end
     end
 
     local playerInventory = PlayerServerInventory[identifier]
@@ -1629,6 +1704,20 @@ AddEventHandler("codem-inventory:swapStashToInventory", function(swapData)
         return
     end
 
+    -- [SECFIX-C3] validar sesion + guardar contra stashId nil/mal formado
+    if not swapData or not swapData.stashId or not ServerStash[swapData.stashId] then
+        TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.STASHINVENTORYNOTFOUND)
+        return
+    end
+    if _G._ValidateStashSession then
+        local ok, reason = _G._ValidateStashSession(playerId, swapData.stashId)
+        if not ok then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "swapStashToInventory: sesion invalida ("..tostring(reason)..") stash="..tostring(swapData.stashId), event = "stash:no-session" })
+            TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.STASHINVENTORYNOTFOUND or "Invalid stash session")
+            return
+        end
+    end
+
     local stashInventory = ServerStash[swapData.stashId].inventory
     local item = stashInventory[swapData.oldSlot]
     
@@ -1734,6 +1823,15 @@ AddEventHandler("codem-inventory:swapStashToStash", function(swapData)
     if not identifier then
         TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.IDENTIFIERNOTFOUND)
         return
+    end
+
+    -- [SECFIX-C3] validar sesion de stash
+    if swapData and swapData.stashId and _G._ValidateStashSession then
+        local ok, reason = _G._ValidateStashSession(playerId, swapData.stashId)
+        if not ok then
+            TriggerEvent('codem-inventory:cheaterlogs', { playerName = GetName(playerId), playerIdentifier = playerId, reason = "swapStashToStash: sesion invalida ("..tostring(reason)..") stash="..tostring(swapData.stashId), event = "stash:no-session" })
+            return
+        end
     end
 
     local stashId = swapData.stashId
