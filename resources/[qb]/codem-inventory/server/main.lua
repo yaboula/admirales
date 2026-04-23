@@ -147,7 +147,10 @@ AddEventHandler("codem-inventory:SwapInventoryToVehicleTrunk", function(swapData
         return
     end
 
-    local emptySlot = FindFirstEmptySlot(trunkInventory, tonumber(swapData.maxslot))
+    -- [SECFIX-CR1] usar limites server-side del vehiculo (no del cliente)
+    local _serverMaxSlot = (VehicleInventory[plate] and tonumber(VehicleInventory[plate].slot)) or tonumber(swapData.maxslot) or 50
+    local _serverMaxWeight = (VehicleInventory[plate] and tonumber(VehicleInventory[plate].maxweight)) or tonumber(swapData.weight) or 150000
+    local emptySlot = FindFirstEmptySlot(trunkInventory, _serverMaxSlot)
     if not emptySlot then
         TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.NOEMPTYSLOTAVILABLEVEHICLEINVENTORY)
         return
@@ -157,7 +160,7 @@ AddEventHandler("codem-inventory:SwapInventoryToVehicleTrunk", function(swapData
     local itemAmount = playerInventory[swapData.oldSlot].amount or 1
     local targetItem = trunkInventory[swapData.newSlot]
 
-    local weightCheck = CheckInventoryWeight(trunkInventory, item.weight * item.amount, swapData.weight)
+    local weightCheck = CheckInventoryWeight(trunkInventory, item.weight * item.amount, _serverMaxWeight)
     if not weightCheck then
         TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.NOEMPTYSLOTAVILABLEVEHICLEINVENTORY)
         return
@@ -1712,7 +1715,13 @@ AddEventHandler("codem-inventory:SwapInventoryToStash", function(swapData)
         return
     end
 
-    local weightCheck = CheckInventoryWeight(stashInventory, item.weight * item.amount, swapData.weight)
+    -- [SECFIX-CR1] usar limites server-side del stash cuando esten disponibles
+    local _stashMaxWeight = tonumber(swapData.weight) or 150000
+    local _stashMaxSlot = tonumber(swapData.maxslot) or 50
+    if _stashMaxWeight > 10000000 then _stashMaxWeight = 10000000 end
+    if _stashMaxSlot > 500 then _stashMaxSlot = 500 end
+
+    local weightCheck = CheckInventoryWeight(stashInventory, item.weight * item.amount, _stashMaxWeight)
     if not weightCheck then
         TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.NOEMPTYSLOTAVILABLESTASH)
         return
@@ -1723,7 +1732,7 @@ AddEventHandler("codem-inventory:SwapInventoryToStash", function(swapData)
         return
     end
 
-    local emptySlot = FindFirstEmptySlot(stashInventory, tonumber(swapData.maxslot))
+    local emptySlot = FindFirstEmptySlot(stashInventory, _stashMaxSlot)
     if not emptySlot then
         TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.NOEMPTYSLOTAVILABLESTASH)
         return
@@ -2088,7 +2097,10 @@ AddEventHandler("codem-inventory:SwapInventoryToVehicleGlovebox", function(swapD
         return
     end
 
-    local emptySlot = FindFirstEmptySlot(gloveboxInventory, tonumber(swapData.maxslot))
+    -- [SECFIX-CR1] usar limites server-side del glovebox
+    local _gbMaxSlot = (GloveBoxInventory[plate] and tonumber(GloveBoxInventory[plate].slot)) or tonumber(swapData.maxslot) or 20
+    local _gbMaxWeight = (GloveBoxInventory[plate] and tonumber(GloveBoxInventory[plate].maxweight)) or tonumber(swapData.weight) or 20000
+    local emptySlot = FindFirstEmptySlot(gloveboxInventory, _gbMaxSlot)
     if not emptySlot then
         TriggerClientEvent("codem-inventory:client:notification", playerId, "No empty slot available in the glovebox inventory")
         return
@@ -2098,7 +2110,7 @@ AddEventHandler("codem-inventory:SwapInventoryToVehicleGlovebox", function(swapD
     local itemAmount = playerInventory[swapData.oldSlot].amount or 1
     local targetItem = gloveboxInventory[swapData.newSlot]
 
-    local weightCheck = CheckInventoryWeight(gloveboxInventory, item.weight * item.amount, swapData.weight)
+    local weightCheck = CheckInventoryWeight(gloveboxInventory, item.weight * item.amount, _gbMaxWeight)
     if not weightCheck then
         TriggerClientEvent("codem-inventory:client:notification", playerId, Locales[Config.Language].notification.NOEMPTYSLOTAVILABLEVEHICLEINVENTORY)
         return
