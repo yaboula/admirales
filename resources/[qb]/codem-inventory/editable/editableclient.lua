@@ -11,6 +11,22 @@ clonedPed = nil
 local isHotbar = false
 
 
+-- [HOTFIX TAB] Toggle abrir/cerrar inventario con debounce.
+-- El comando 'inventory' original solo ABRE. Si el jugador pulsaba TAB dos veces
+-- no se cerraba, dando la sensacion de que "la tecla no funciona".
+local lastInventoryToggle = 0
+local function ToggleInventoryKey()
+    local now = GetGameTimer()
+    if now - lastInventoryToggle < 250 then return end
+    lastInventoryToggle = now
+    if IsPauseMenuActive() then return end
+    if OpenInventory then
+        TriggerEvent('codem-inventory:client:closeInventory')
+    else
+        TriggerEvent('codem-inventory:openInventory')
+    end
+end
+
 Citizen.CreateThread(function()
     while not nuiLoaded and Core == nil do
         Citizen.Wait(0)
@@ -18,7 +34,7 @@ Citizen.CreateThread(function()
     RegisterKeyMapping('inventory', 'Inventory', 'keyboard', Config.KeyBinds.Inventory)
 
     RegisterCommand('inventory', function()
-        TriggerEvent('codem-inventory:openInventory')
+        ToggleInventoryKey()
     end)
     RegisterCommand('hotbar', function()
         isHotbar = not isHotbar
@@ -34,6 +50,25 @@ Citizen.CreateThread(function()
         RegisterCommand("useslot" .. i, function()
             UseSlot(i)
         end)
+    end
+end)
+
+-- [HOTFIX TAB] Fallback de tecla TAB por control directo (INPUT_SELECT_WEAPON = 37).
+-- RegisterKeyMapping solo fija el DEFAULT; si el jugador ya tenia una bind
+-- guardada (de una config previa) TAB no dispara el comando. Este hilo garantiza
+-- que TAB abra/cierre el inventario SIEMPRE, y bloquea la rueda de armas de GTA
+-- para que no aparezca al pulsar TAB.
+CreateThread(function()
+    while true do
+        local wait = 500
+        if not IsPauseMenuActive() then
+            wait = 0
+            DisableControlAction(0, 37, true)
+            if IsDisabledControlJustPressed(0, 37) then
+                ToggleInventoryKey()
+            end
+        end
+        Wait(wait)
     end
 end)
 

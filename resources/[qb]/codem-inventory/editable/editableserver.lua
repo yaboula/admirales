@@ -526,42 +526,68 @@ end)
 
 -- [HOTFIX PARA EL BUG DEL SPLIT EN OBFUSCACION]
 -- Estos eventos evitan llamar al código compilado bugeado.
+--
+-- CAUSA RAIZ: Player.Functions.AddItem (QBCore) y el AddItem propio de codem-inventory
+-- (serverexport.lua L560-572) hacen stacking automatico sobre cualquier stack existente
+-- del mismo item no-unico, IGNORANDO el slot explicito. Resultado: el split removia
+-- del slot origen y volvia a apilar en el MISMO slot -> solo se veian las notifs pero
+-- el inventario quedaba igual.
+--
+-- SOLUCION: manipular PlayerServerInventory[identifier].inventory directamente
+-- (que es la fuente de verdad del script) y emitir los eventos de UI correctos.
 RegisterNetEvent('codem-inventory:server:splitItemCustom', function(data)
     local src = source
-    local Player = Core.Functions.GetPlayer(src)
-    if not Player then return end
+    local identifier = Identifier[src]
+    if not identifier then return end
 
-    local item = data.item
+    local playerInventory = PlayerServerInventory[identifier] and PlayerServerInventory[identifier].inventory
+    if not playerInventory then return end
+
+    if type(data) ~= 'table' or type(data.item) ~= 'table' then return end
+
     local amount = tonumber(data.amount)
-    if not item or not item.slot or not amount or amount <= 0 then return end
+    if not amount or amount <= 0 then return end
 
-    local existingItem = Player.Functions.GetItemBySlot(tonumber(item.slot)) or Player.Functions.GetItemBySlot(tostring(item.slot))
-    if not existingItem then return end
-    if tonumber(existingItem.amount) <= amount then return end
+    local oldSlot = tostring(data.item.slot)
+    if oldSlot == 'nil' or oldSlot == '' then return end
 
-    local nextSlot = nil
-    local maxSlots = Config.MaxSlots or 41
-    for i=1, maxSlots do
-        if not Player.Functions.GetItemBySlot(i) then
-            nextSlot = i
-            break
-        end
+    local originalItem = playerInventory[oldSlot]
+    if not originalItem then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            (Locales[Config.Language] and Locales[Config.Language].notification and Locales[Config.Language].notification.ITEMNOTFOUNDINGIVENSLOT) or 'Objet introuvable')
+        return
     end
 
-    if nextSlot then
-        local slotNum = tonumber(existingItem.slot)
-        local rem = Player.Functions.RemoveItem(existingItem.name, amount, slotNum)
-        if rem then
-            local add = Player.Functions.AddItem(existingItem.name, amount, nextSlot, existingItem.info)
-            if not add then
-                Player.Functions.AddItem(existingItem.name, amount, slotNum, existingItem.info)
-            end
-            Wait(50)
-            SetInventory(src)
-        end
-    else
-        TriggerClientEvent('codem-inventory:client:notification', src, 'Sin ranuras libres')
+    local currentAmount = tonumber(originalItem.amount) or 0
+    if currentAmount <= amount then
+        TriggerClientEvent('codem-inventory:client:notification', src, 'Quantité invalide pour diviser')
+        return
     end
+
+    if originalItem.unique then
+        TriggerClientEvent('codem-inventory:client:notification', src, 'Cet objet ne peut pas être divisé')
+        return
+    end
+
+    local newSlotStr = FindFirstEmptySlot(playerInventory, Config.MaxSlots or 41)
+    if not newSlotStr then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            (Locales[Config.Language] and Locales[Config.Language].notification and Locales[Config.Language].notification.NOEMPTYSLOTAVILABLEYOUR) or 'Aucune fente libre')
+        return
+    end
+
+    originalItem.amount = currentAmount - amount
+    originalItem.slot = oldSlot
+
+    local newItem = deepCopy(originalItem)
+    newItem.amount = amount
+    newItem.slot = newSlotStr
+    playerInventory[newSlotStr] = newItem
+
+    SetInventory(src)
+
+    TriggerClientEvent('codem-inventory:client:setitemamount', src, oldSlot, originalItem.amount)
+    TriggerClientEvent('codem-inventory:client:additem', src, newSlotStr, newItem)
 end)
 
 RegisterNetEvent('codem-inventory:server:splitItemStashCustom', function(data)
@@ -662,5 +688,180 @@ RegisterNetEvent('codem-inventory:server:splitItemGloveBoxCustom', function(data
         TriggerClientEvent('codem-inventory:splitItemGloveboxClient', -1, plate, originalItem.slot, originalItem.amount, nextSlot, newItem)
     else
         TriggerClientEvent('codem-inventory:client:notification', src, 'Guantera llena')
+    end
+end)
+
+-- [HOTFIX GIVEITEM] Handler servidor de "dar objeto a jugador cercano"
+--
+-- CAUSA RAIZ: el cliente dispara 'codem-inventory:server:giveItemToPlayerNearby'
+-- (ver client/main.lua L420) pero NO EXISTE ningun listener en server/main.lua ni
+-- en el resto del codigo compilado. Por eso click en "Donner" no hacia nada.
+--
+-- SOLUCION: implementar el handler completo manipulando PlayerServerInventory
+-- directamente (fuente de verdad del script), con validaciones defensivas
+-- (identificador, distancia, peso, slot libre, item unico), anti-dupe mediante
+-- verificacion del slot origen antes de mover, y rollback si la adicion falla.
+RegisterNetEvent('codem-inventory:server:giveItemToPlayerNearby', function(data)
+    local src = source
+    if type(data) ~= 'table' or type(data.item) ~= 'table' then return end
+
+    local targetSrc = tonumber(data.player)
+    if not targetSrc or targetSrc == src then return end
+
+    local itemData = data.item
+    local itemName = itemData.name
+    local oldSlot = tostring(itemData.slot or '')
+    local giveAmount = tonumber(itemData.amount) or 0
+    if not itemName or oldSlot == '' or giveAmount <= 0 then return end
+
+    local localeNotif = Locales[Config.Language] and Locales[Config.Language].notification or {}
+
+    local srcIdentifier = Identifier[src]
+    if not srcIdentifier or not PlayerServerInventory[srcIdentifier] then return end
+    local srcInventory = PlayerServerInventory[srcIdentifier].inventory
+    if not srcInventory then return end
+
+    local tgtIdentifier = Identifier[targetSrc]
+    if not tgtIdentifier or not PlayerServerInventory[tgtIdentifier] then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            localeNotif.NOTFOUNDPLAYER or 'Joueur introuvable')
+        return
+    end
+    local tgtInventory = PlayerServerInventory[tgtIdentifier].inventory
+    if not tgtInventory then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            localeNotif.PLAYERINVENTORYNOTFOUND or 'Inventaire du joueur introuvable')
+        return
+    end
+
+    local sourceItem = srcInventory[oldSlot]
+    if not sourceItem or sourceItem.name ~= itemName then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            localeNotif.ITEMNOTFOUNDINGIVENSLOT or 'Objet introuvable')
+        return
+    end
+    if tonumber(sourceItem.amount) < giveAmount then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            localeNotif.ENOUGHITEM or 'Quantité insuffisante')
+        return
+    end
+
+    local srcPed = GetPlayerPed(src)
+    local tgtPed = GetPlayerPed(targetSrc)
+    if not srcPed or srcPed == 0 or not tgtPed or tgtPed == 0 then return end
+    local srcCoords = GetEntityCoords(srcPed)
+    local tgtCoords = GetEntityCoords(tgtPed)
+    if #(srcCoords - tgtCoords) > 5.0 then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            localeNotif.NOTFOUNDPLAYER or 'Joueur trop loin')
+        return
+    end
+
+    local itemConfig = Config.Itemlist[itemName]
+    if not itemConfig then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            localeNotif.ITEMNOTFOUNDITEMLIST or 'Objet inconnu')
+        return
+    end
+
+    local itemIsUnique = sourceItem.unique or itemConfig.unique
+    if itemIsUnique then
+        giveAmount = 1
+    end
+
+    local totalWeight = (tonumber(itemConfig.weight) or 0) * giveAmount
+    if not CheckInventoryWeight(tgtInventory, totalWeight, Config.MaxWeight) then
+        TriggerClientEvent('codem-inventory:client:notification', src,
+            localeNotif.INVENTORYISFULL or 'Inventaire du joueur plein')
+        return
+    end
+
+    if itemConfig.type == 'bag' then
+        local bagCount = 0
+        for _, bagItem in pairs(tgtInventory) do
+            if bagItem.type == 'bag' then
+                bagCount = bagCount + 1
+            end
+        end
+        if bagCount >= tonumber(Config.MaxBackPackItem or 2) then
+            TriggerClientEvent('codem-inventory:client:notification', src,
+                localeNotif.MAXBAGPACKITEM or 'Limite de sacs atteinte')
+            return
+        end
+    end
+
+    local originalAmount = tonumber(sourceItem.amount)
+    sourceItem.amount = originalAmount - giveAmount
+    local sourceNowEmpty = sourceItem.amount <= 0
+    if sourceNowEmpty then
+        srcInventory[oldSlot] = nil
+    end
+
+    local addedToExistingSlot = nil
+    if not itemIsUnique then
+        for k, v in pairs(tgtInventory) do
+            if v.name == itemName and not v.unique then
+                v.amount = (tonumber(v.amount) or 0) + giveAmount
+                addedToExistingSlot = tostring(k)
+                break
+            end
+        end
+    end
+
+    local newSlotStr = nil
+    local newItem = nil
+    if not addedToExistingSlot then
+        newSlotStr = FindFirstEmptySlot(tgtInventory, Config.MaxSlots or 41)
+        if not newSlotStr then
+            if sourceNowEmpty then
+                srcInventory[oldSlot] = sourceItem
+            end
+            sourceItem.amount = originalAmount
+            TriggerClientEvent('codem-inventory:client:notification', src,
+                localeNotif.NOEMPTYSLOTAVILABLEYOUR or 'Aucune fente libre chez le joueur')
+            return
+        end
+        newItem = deepCopy(sourceItem)
+        newItem.amount = giveAmount
+        newItem.slot = newSlotStr
+        if itemData.info and type(itemData.info) == 'table' and next(itemData.info) ~= nil then
+            newItem.info = deepCopy(itemData.info)
+        end
+        tgtInventory[newSlotStr] = newItem
+    end
+
+    SetInventory(src)
+    SetInventory(targetSrc)
+
+    if sourceNowEmpty then
+        TriggerClientEvent('codem-inventory:client:removeitemtoclientInventory', src, oldSlot, giveAmount)
+    else
+        TriggerClientEvent('codem-inventory:client:setitemamount', src, oldSlot, sourceItem.amount)
+    end
+
+    if addedToExistingSlot then
+        TriggerClientEvent('codem-inventory:updateitemamount', targetSrc,
+            addedToExistingSlot, tgtInventory[addedToExistingSlot].amount, giveAmount)
+    elseif newSlotStr then
+        TriggerClientEvent('codem-inventory:client:additem', targetSrc, newSlotStr, newItem)
+    end
+
+    TriggerClientEvent('codem-inventory:client:notification', src,
+        localeNotif.GIVEITEMTOPLAYER or 'Objet donné')
+
+    TriggerClientEvent('codem-inventory:giveanim', src)
+    TriggerClientEvent('codem-inventory:giveanim', targetSrc)
+
+    if Config.UseDiscordWebhooks then
+        local logData = {
+            playername = GetName(src) .. ' - ' .. src,
+            itemname = (itemConfig.label or itemName),
+            amount = giveAmount,
+            info = newItem and newItem.info or sourceItem.info,
+            reason = 'Vers: ' .. GetName(targetSrc) .. ' - ' .. targetSrc
+        }
+        TriggerEvent('codem-inventory:CreateLog',
+            localeNotif.GIVEITEMTOPLAYER or 'Give item to player',
+            'blue', logData, src, 'give')
     end
 end)
