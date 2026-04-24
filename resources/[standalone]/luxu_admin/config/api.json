@@ -1,0 +1,15 @@
+{
+  "fivemanage": {
+    "image": "",
+    "video": "",
+    "audio": ""
+  },
+  "discord_bot": {
+    "enabled": false,
+    "client_id": "",
+    "token": "",
+    "guild_id": ""
+  },
+  "custom_ice_servers": [{ "urls": ["stun:stun.cloudflare.com:3478"] }],
+  "__ice_servers_comment__": "This is the list of ICE servers that will be used for the WebRTC connection. You can add your own servers here, but make sure to keep the default servers."
+}
