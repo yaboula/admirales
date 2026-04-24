@@ -51,7 +51,7 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 - `3fe_woodbox` - `SUBIDO` - parte de pack ilegal (commit/push realizado en este ciclo).
 - `0r-illegalpack` - `SUBIDO` - pack ilegal principal (commit/push realizado en este ciclo).
 - `cfx-nteam-paletomechanic` - `SUBIDO` - mapa/defaultmap (commit/push realizado en este ciclo).
-- `sc_c_island` - `PENDIENTE` - mapa/defaultmap.
+- `sc_c_island` - `SUBIDO` - mapa/defaultmap (commit/push realizado en este ciclo).
 
 ### Reemplazos / retiros detectados
 
@@ -72,4 +72,4 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 
 ## Cola de trabajo sugerida (cronologica)
 
-1. `sc_c_island`
+Cola completada.
