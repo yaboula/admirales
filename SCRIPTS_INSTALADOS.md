@@ -45,9 +45,9 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 - `codem-craftv2` - `SUBIDO` - crafting (commit/push realizado en este ciclo).
 - `luxu_admin` - `SUBIDO` - panel admin premium (commit/push realizado en este ciclo).
 - `origen_police` - `SUBIDO` - reemplazo de policejob (commit/push realizado en este ciclo).
-- `jg-mechanic-props` - `PENDIENTE` - **PACK JG Mechanic** (dependencia visual).
-- `jg-vehiclemileage` - `PENDIENTE` - **PACK JG Mechanic** (dependencia funcional).
-- `jg-mechanic` - `PENDIENTE` - **PACK JG Mechanic** (principal).
+- `jg-mechanic-props` - `SUBIDO` - **PACK JG Mechanic** (dependencia visual) (commit/push realizado en este ciclo).
+- `jg-vehiclemileage` - `SUBIDO` - **PACK JG Mechanic** (dependencia funcional) (commit/push realizado en este ciclo).
+- `jg-mechanic` - `SUBIDO` - **PACK JG Mechanic** (principal) (commit/push realizado en este ciclo).
 - `3fe_woodbox` - `PENDIENTE` - parte de pack ilegal.
 - `0r-illegalpack` - `PENDIENTE` - pack ilegal principal.
 - `cfx-nteam-paletomechanic` - `PENDIENTE` - mapa/defaultmap.
@@ -72,7 +72,6 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 
 ## Cola de trabajo sugerida (cronologica)
 
-1. `jg-mechanic-props` + `jg-vehiclemileage` + `jg-mechanic` (como pack)
-2. `3fe_woodbox` + `0r-illegalpack` (pack)
-3. `cfx-nteam-paletomechanic`
-4. `sc_c_island`
+1. `3fe_woodbox` + `0r-illegalpack` (pack)
+2. `cfx-nteam-paletomechanic`
+3. `sc_c_island`
