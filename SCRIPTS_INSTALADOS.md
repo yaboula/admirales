@@ -48,8 +48,8 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 - `jg-mechanic-props` - `SUBIDO` - **PACK JG Mechanic** (dependencia visual) (commit/push realizado en este ciclo).
 - `jg-vehiclemileage` - `SUBIDO` - **PACK JG Mechanic** (dependencia funcional) (commit/push realizado en este ciclo).
 - `jg-mechanic` - `SUBIDO` - **PACK JG Mechanic** (principal) (commit/push realizado en este ciclo).
-- `3fe_woodbox` - `PENDIENTE` - parte de pack ilegal.
-- `0r-illegalpack` - `PENDIENTE` - pack ilegal principal.
+- `3fe_woodbox` - `SUBIDO` - parte de pack ilegal (commit/push realizado en este ciclo).
+- `0r-illegalpack` - `SUBIDO` - pack ilegal principal (commit/push realizado en este ciclo).
 - `cfx-nteam-paletomechanic` - `PENDIENTE` - mapa/defaultmap.
 - `sc_c_island` - `PENDIENTE` - mapa/defaultmap.
 
@@ -72,6 +72,5 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 
 ## Cola de trabajo sugerida (cronologica)
 
-1. `3fe_woodbox` + `0r-illegalpack` (pack)
-2. `cfx-nteam-paletomechanic`
-3. `sc_c_island`
+1. `cfx-nteam-paletomechanic`
+2. `sc_c_island`
