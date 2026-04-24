@@ -50,7 +50,7 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 - `jg-mechanic` - `SUBIDO` - **PACK JG Mechanic** (principal) (commit/push realizado en este ciclo).
 - `3fe_woodbox` - `SUBIDO` - parte de pack ilegal (commit/push realizado en este ciclo).
 - `0r-illegalpack` - `SUBIDO` - pack ilegal principal (commit/push realizado en este ciclo).
-- `cfx-nteam-paletomechanic` - `PENDIENTE` - mapa/defaultmap.
+- `cfx-nteam-paletomechanic` - `SUBIDO` - mapa/defaultmap (commit/push realizado en este ciclo).
 - `sc_c_island` - `PENDIENTE` - mapa/defaultmap.
 
 ### Reemplazos / retiros detectados
@@ -72,5 +72,4 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 
 ## Cola de trabajo sugerida (cronologica)
 
-1. `cfx-nteam-paletomechanic`
-2. `sc_c_island`
+1. `sc_c_island`
