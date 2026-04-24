@@ -41,7 +41,7 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 ### 2026-04-22 / 2026-04-24 (detectado en server.cfg + estado git)
 
 - `lation_ui` - `SUBIDO` - script standalone UI (commit/push realizado en este ciclo).
-- `mWeed` - `PENDIENTE` - script de cultivo (categoria `[qb]`).
+- `mWeed` - `SUBIDO` - script de cultivo (categoria `[qb]`) (commit/push realizado en este ciclo).
 - `codem-craftv2` - `PENDIENTE` - crafting.
 - `luxu_admin` - `PENDIENTE` - panel admin premium.
 - `origen_police` - `PENDIENTE` - reemplazo de policejob.
@@ -72,11 +72,10 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 
 ## Cola de trabajo sugerida (cronologica)
 
-1. `mWeed`
-2. `codem-craftv2`
-3. `luxu_admin`
-4. `origen_police`
-5. `jg-mechanic-props` + `jg-vehiclemileage` + `jg-mechanic` (como pack)
-6. `3fe_woodbox` + `0r-illegalpack` (pack)
-7. `cfx-nteam-paletomechanic`
-8. `sc_c_island`
+1. `codem-craftv2`
+2. `luxu_admin`
+3. `origen_police`
+4. `jg-mechanic-props` + `jg-vehiclemileage` + `jg-mechanic` (como pack)
+5. `3fe_woodbox` + `0r-illegalpack` (pack)
+6. `cfx-nteam-paletomechanic`
+7. `sc_c_island`
