@@ -44,7 +44,7 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 - `mWeed` - `SUBIDO` - script de cultivo (categoria `[qb]`) (commit/push realizado en este ciclo).
 - `codem-craftv2` - `SUBIDO` - crafting (commit/push realizado en este ciclo).
 - `luxu_admin` - `SUBIDO` - panel admin premium (commit/push realizado en este ciclo).
-- `origen_police` - `PENDIENTE` - reemplazo de policejob.
+- `origen_police` - `SUBIDO` - reemplazo de policejob (commit/push realizado en este ciclo).
 - `jg-mechanic-props` - `PENDIENTE` - **PACK JG Mechanic** (dependencia visual).
 - `jg-vehiclemileage` - `PENDIENTE` - **PACK JG Mechanic** (dependencia funcional).
 - `jg-mechanic` - `PENDIENTE` - **PACK JG Mechanic** (principal).
@@ -72,8 +72,7 @@ Documento operativo para no perder trazabilidad de instalaciones en el servidor 
 
 ## Cola de trabajo sugerida (cronologica)
 
-1. `origen_police`
-2. `jg-mechanic-props` + `jg-vehiclemileage` + `jg-mechanic` (como pack)
-3. `3fe_woodbox` + `0r-illegalpack` (pack)
-4. `cfx-nteam-paletomechanic`
-5. `sc_c_island`
+1. `jg-mechanic-props` + `jg-vehiclemileage` + `jg-mechanic` (como pack)
+2. `3fe_woodbox` + `0r-illegalpack` (pack)
+3. `cfx-nteam-paletomechanic`
+4. `sc_c_island`
